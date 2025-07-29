@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "next-themes";
+import { Navbar } from "@/nav/navbar";
+import { AuthProvider } from "@/lib/useAuth";
+import { ProfileProvider } from "@/lib/useProfile";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -11,6 +15,8 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -23,11 +29,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <head />
+      <body className={`${inter.className} ${geistMono.variable} antialiased`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            <ProfileProvider>
+              <div className="min-h-screen flex flex-col">
+                <Navbar />
+                <main className="flex-1 container py-6">{children}</main>
+              </div>
+            </ProfileProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

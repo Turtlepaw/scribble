@@ -1,0 +1,154 @@
+"use client";
+
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "./ModeToggle"; // for dark mode toggle
+import { Menu, X } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "@/lib/useAuth";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useProfile } from "@/lib/useProfile";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+export function Navbar() {
+  const [open, setOpen] = useState(false);
+  const { session, logout } = useAuth();
+  const { profile, loading } = useProfile();
+
+  return (
+    <header className="border-b border-border bg-background/90 backdrop-blur-[200px] sticky top-0 z-50">
+      <div className="container flex items-center justify-between h-16">
+        <Link
+          href="/"
+          className="text-xl font-bold pl-5 hover:text-black/70 dark:hover:text-white/70 transition-colors"
+        >
+          Scribble
+        </Link>
+
+        <nav className="hidden md:flex gap-4">
+          {/* <Link href="/explore" className="hover:underline">
+            Explore
+          </Link>
+          <Link href="/profile" className="hover:underline">
+            Profile
+          </Link>
+          <Link href="/settings" className="hover:underline">
+            Settings
+          </Link> */}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <ModeToggle />
+          {session ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="cursor-pointer">
+                <Button variant="ghost" size="icon" className="cursor-pointer">
+                  {loading ? (
+                    <span className="loader"></span>
+                  ) : (
+                    <Avatar className="w-6 h-6">
+                      <AvatarImage src={profile?.avatar} />
+                      <AvatarFallback>
+                        {profile?.displayName || profile?.handle}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {/* <DropdownMenuItem>Profile</DropdownMenuItem> */}
+                <DropdownMenuItem className="cursor-pointer" onClick={logout}>
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <LoginButton />
+          )}
+          <Button
+            variant="ghost"
+            className="block md:hidden cursor-pointer"
+            onClick={() => setOpen(!open)}
+            aria-label="Toggle Menu"
+          >
+            {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
+        </div>
+      </div>
+
+      {/* Mobile nav */}
+      {open && (
+        <div className="md:hidden border-t border-border bg-background px-4 pb-4">
+          <nav className="flex flex-col gap-2 mt-2">
+            <Link href="/explore" onClick={() => setOpen(false)}>
+              Explore
+            </Link>
+            <Link href="/profile" onClick={() => setOpen(false)}>
+              Profile
+            </Link>
+            <Link href="/settings" onClick={() => setOpen(false)}>
+              Settings
+            </Link>
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+}
+
+function LoginButton() {
+  const { login } = useAuth();
+  const [handle, setHandle] = useState("");
+  return (
+    <Dialog>
+      <DialogTrigger>
+        <Button size="sm" className="cursor-pointer">
+          Login
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Login with your handle on the Atmosphere</DialogTitle>
+          <DialogDescription className="pt-5">
+            <Input
+              value={handle}
+              onChange={(e) => setHandle(e.target.value)}
+              placeholder="example.bsky.social"
+              className="text-white"
+            />
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            onClick={() => {
+              login(handle);
+            }}
+            disabled={!handle}
+            className="cursor-pointer"
+          >
+            Sign In
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

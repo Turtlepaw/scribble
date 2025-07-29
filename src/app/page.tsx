@@ -1,103 +1,180 @@
+"use client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/lib/useAuth";
+import {
+  AppBskyEmbedImages,
+  AppBskyFeedDefs,
+  AppBskyFeedPost,
+} from "@atproto/api";
+import { LoaderCircle } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from "next/link";
 
 export default function Home() {
+  const [timeline, setTimeline] = useState<AppBskyFeedDefs.FeedViewPost[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { agent } = useAuth();
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const seenImageUrls = new Set<string>();
+
+  const fetchFeed = useCallback(async () => {
+    if (!agent || loading) return [];
+    setLoading(true);
+    try {
+      const response = await agent.getTimeline({
+        cursor: cursor ?? undefined,
+        limit: 100,
+      });
+      if (!response.success) throw new Error("Failed to fetch timeline");
+
+      const nextCursor = response.data.cursor || null;
+      setCursor(nextCursor);
+
+      const filtered = response.data.feed.filter((it) => {
+        // Filter out reposts
+        if (it.reason?.$type === "app.bsky.feed.defs#reasonRepost")
+          return false;
+
+        // Must be an image embed
+        if (
+          !(
+            AppBskyEmbedImages.isMain(it.post.embed) ||
+            AppBskyEmbedImages.isView(it.post.embed)
+          )
+        ) {
+          return false;
+        }
+
+        // Check for new image URLs (to avoid repeats)
+        const images = (it.post.embed as AppBskyEmbedImages.View)?.images || [];
+        const hasNewImage = images.some(
+          (img) => !seenImageUrls.has(img.fullsize)
+        );
+        if (!hasNewImage) return false;
+
+        // Add seen image URLs
+        images.forEach((img) => seenImageUrls.add(img.fullsize));
+        return true;
+      });
+
+      return filtered;
+    } catch (err) {
+      console.error("Error fetching timeline", err);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, [agent, cursor, loading]);
+
+  // Initial + fill up to 15 images
+  useEffect(() => {
+    if (!agent) return;
+
+    const loadMinimumPosts = async () => {
+      let accumulated: AppBskyFeedDefs.FeedViewPost[] = [];
+      let newCursor = cursor;
+
+      while (
+        accumulated.flatMap(
+          (p) => (p.post.embed as AppBskyEmbedImages.View)?.images || []
+        ).length < 15
+      ) {
+        const batch = await fetchFeed();
+        if (batch.length === 0) break;
+        accumulated = [...accumulated, ...batch];
+        newCursor = cursor;
+      }
+
+      setTimeline(accumulated);
+    };
+
+    loadMinimumPosts();
+  }, [agent]);
+
+  // Load more on scroll to sentinel
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting && !loading && cursor) {
+          const more = await fetchFeed();
+          setTimeline((prev) => [...prev, ...more]);
+        }
+      },
+      {
+        rootMargin: "200px",
+      }
+    );
+
+    const sentinel = sentinelRef.current;
+    if (sentinel) observer.observe(sentinel);
+    return () => {
+      if (sentinel) observer.unobserve(sentinel);
+    };
+  }, [fetchFeed, cursor, loading]);
+
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+      <main className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 row-start-2">
+        {timeline.flatMap((post) => {
+          if (!AppBskyEmbedImages.isView(post.post.embed)) return;
+          const images = post.post.embed.images || [];
+          if (images.length === 0) return [];
+          const t: string = (post.post.record.text as string) || "";
+          const maxLength = 100;
+          return images.map((image, index) => (
+            <Link
+              href={`/${post.post.author.did}/${post.post.uri
+                .split("/")
+                .pop()}?image=${index}`}
+              key={image.fullsize}
+            >
+              <div className="group relative w-[200px] h-[200px] overflow-hidden rounded-xl">
+                <Image
+                  src={image.fullsize}
+                  alt={image.alt}
+                  placeholder="blur"
+                  blurDataURL={image.thumb}
+                  fill
+                  style={{ objectFit: "cover" }}
+                  sizes="200px"
+                />
+                <div className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+                  <div className="text-sm mb-1">
+                    {AppBskyFeedPost.isRecord(post.post.record) && (
+                      <>
+                        {t.length > maxLength ? t.slice(0, maxLength) + "…" : t}
+                      </>
+                    )}
+                  </div>
+                  <div className="text-xs flex gap-2">
+                    <Avatar>
+                      <AvatarImage src={post.post.author.avatar} />
+                      <AvatarFallback>
+                        {post.post.author.displayName ||
+                          post.post.author.handle}
+                      </AvatarFallback>
+                    </Avatar>
+                    {post.post.author.displayName || post.post.author.handle}
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ));
+        })}
+        <div ref={sentinelRef} className="h-1 col-span-full" />
+        {loading && (
+          <div className="col-span-full flex justify-center text-sm text-black/70 dark:text-white/70">
+            <LoaderCircle className="animate-spin" />
+          </div>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center"></footer>
     </div>
   );
 }
