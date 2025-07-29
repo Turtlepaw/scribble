@@ -234,7 +234,7 @@ type BskyImageProps = {
   height?: number;
 } & Omit<ImageProps, "src" | "alt">;
 
-export function BskyImage({ embed, imageIndex = 0, ...props }: BskyImageProps) {
+function BskyImage({ embed, imageIndex = 0, ...props }: BskyImageProps) {
   if (!AppBskyEmbedImages.isView(embed)) return null;
 
   const image = embed.images?.[imageIndex];
