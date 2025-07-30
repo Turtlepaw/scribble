@@ -11,6 +11,8 @@ import Image from "next/image";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
+import Masonry from "react-masonry-css";
+import { motion } from "motion/react";
 
 export default function Home() {
   const [timeline, setTimeline] = useState<AppBskyFeedDefs.FeedViewPost[]>([]);
@@ -117,55 +119,94 @@ export default function Home() {
     };
   }, [fetchFeed, cursor, loading]);
 
+  const breakpointColumnsObj = {
+    default: 5,
+    1536: 4,
+    1280: 3,
+    1024: 2,
+    768: 1,
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 row-start-2">
-        {timeline.flatMap((post) => {
-          if (!AppBskyEmbedImages.isView(post.post.embed)) return;
-          const images = post.post.embed.images || [];
-          if (images.length === 0) return [];
-          const t: string = (post.post.record.text as string) || "";
-          const maxLength = 100;
-          return images.map((image, index) => (
-            <Link
-              href={`/${post.post.author.did}/${post.post.uri
-                .split("/")
-                .pop()}?image=${index}`}
-              key={image.fullsize}
-            >
-              <div className="group relative w-[200px] h-[200px] overflow-hidden rounded-xl">
-                <Image
-                  src={image.fullsize}
-                  alt={image.alt}
-                  placeholder="blur"
-                  blurDataURL={image.thumb}
-                  fill
-                  style={{ objectFit: "cover" }}
-                  sizes="200px"
-                />
-                <div className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-                  <div className="text-sm mb-1">
-                    {AppBskyFeedPost.isRecord(post.post.record) && (
-                      <>
-                        {t.length > maxLength ? t.slice(0, maxLength) + "…" : t}
-                      </>
-                    )}
+    <div className="items-center justify-items-center">
+      <div className="h-5" />
+      <main className="">
+        <Masonry
+          breakpointCols={breakpointColumnsObj}
+          className="flex -mx-2 w-auto"
+          columnClassName="px-2 space-y-4"
+        >
+          {timeline.flatMap((post) => {
+            if (!AppBskyEmbedImages.isView(post.post.embed)) return;
+            const images = post.post.embed.images || [];
+            if (images.length === 0) return [];
+            const t: string = (post.post.record.text as string) || "";
+            const maxLength = 100;
+            return images.map((image, index) => (
+              <Link
+                href={`/${post.post.author.did}/${post.post.uri
+                  .split("/")
+                  .pop()}?image=${index}`}
+                key={image.fullsize}
+                className="block"
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  whileTap={{ scale: 0.99 }}
+                  className="group relative w-full min-h-[120px] min-w-[120px] overflow-hidden rounded-xl bg-gray-900"
+                >
+                  {/* Blurred background */}
+                  <Image
+                    src={image.fullsize}
+                    alt=""
+                    fill
+                    placeholder="blur"
+                    blurDataURL={image.thumb}
+                    className="object-cover filter blur-xl scale-110 opacity-30"
+                  />
+
+                  {/* Centered foreground image */}
+                  <div className="relative z-10 flex items-center justify-center w-full min-h-[120px]">
+                    <Image
+                      src={image.fullsize}
+                      alt={image.alt}
+                      placeholder="blur"
+                      blurDataURL={image.thumb}
+                      width={image?.aspectRatio?.width ?? 400}
+                      height={image?.aspectRatio?.height ?? 400}
+                      className="object-contain max-w-full max-h-full rounded-lg"
+                    />
                   </div>
-                  <div className="text-xs flex gap-2">
-                    <Avatar>
-                      <AvatarImage src={post.post.author.avatar} />
-                      <AvatarFallback>
-                        {post.post.author.displayName ||
-                          post.post.author.handle}
-                      </AvatarFallback>
-                    </Avatar>
-                    {post.post.author.displayName || post.post.author.handle}
+
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 z-20 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+                    <div className="text-sm mb-1">
+                      {AppBskyFeedPost.isRecord(post.post.record) && (
+                        <>
+                          {t.length > maxLength
+                            ? t.slice(0, maxLength) + "…"
+                            : t}
+                        </>
+                      )}
+                    </div>
+                    <div className="text-xs flex gap-2">
+                      <Avatar>
+                        <AvatarImage src={post.post.author.avatar} />
+                        <AvatarFallback>
+                          {post.post.author.displayName ||
+                            post.post.author.handle}
+                        </AvatarFallback>
+                      </Avatar>
+                      {post.post.author.displayName || post.post.author.handle}
+                    </div>
                   </div>
-                </div>
-              </div>
-            </Link>
-          ));
-        })}
+                </motion.div>
+              </Link>
+            ));
+          })}
+        </Masonry>
         <div ref={sentinelRef} className="h-1 col-span-full" />
         {loading && (
           <div className="col-span-full flex justify-center text-sm text-black/70 dark:text-white/70">
@@ -174,7 +215,7 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center"></footer>
+      {/* <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center"></footer> */}
     </div>
   );
 }

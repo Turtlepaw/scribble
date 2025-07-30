@@ -37,7 +37,7 @@ export default function RootLayout({
             <ProfileProvider>
               <div className="min-h-screen flex flex-col">
                 <Navbar />
-                <main className="flex-1 container py-6">{children}</main>
+                <main className="flex-1 py-6">{children}</main>
               </div>
             </ProfileProvider>
           </AuthProvider>

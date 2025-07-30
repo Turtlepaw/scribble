@@ -34,12 +34,12 @@ export function Navbar() {
 
   return (
     <header className="border-b border-border bg-background/90 backdrop-blur-[200px] sticky top-0 z-50">
-      <div className="container flex items-center justify-between h-16">
+      <div className="flex items-center justify-between h-16 px-5">
         <Link
           href="/"
-          className="text-xl font-bold pl-5 hover:text-black/70 dark:hover:text-white/70 transition-colors"
+          className="text-xl font-bold hover:text-black/70 dark:hover:text-white/70 transition-colors"
         >
-          Scribble
+          Scribbleboard
         </Link>
 
         <nav className="hidden md:flex gap-4">

@@ -1,12 +1,12 @@
 {
-    "client_id": "https://my-app.com/client-metadata.json",
-    "client_name": "My App",
-    "client_uri": "https://my-app.com",
-    "logo_uri": "https://my-app.com/logo.png",
-    "tos_uri": "https://my-app.com/tos",
-    "policy_uri": "https://my-app.com/policy",
+    "client_id": "https://scribbleboard.pages.dev/client-metadata.json",
+    "client_name": "Scribbleboard",
+    "client_uri": "https://scribbleboard.pages.dev",
+    "logo_uri": "https://scribbleboard.pages.dev/logo.png",
+    "tos_uri": "https://scribbleboard.pages.dev/tos",
+    "policy_uri": "https://scribbleboard.pages.dev/policy",
     "redirect_uris": [
-        "https://my-app.com/callback"
+        "https://scribbleboard.pages.dev"
     ],
     "scope": "atproto transition:generic",
     "grant_types": [
