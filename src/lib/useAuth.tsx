@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           })
         : await BrowserOAuthClient.load({
             handleResolver,
-            clientId: "https://yourdomain.com/client-metadata.json",
+            clientId: "https://scribbleboard.pages.dev/client-metadata.json",
           });
 
       setClient(c);
