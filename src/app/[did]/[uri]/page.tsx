@@ -28,6 +28,8 @@ function paramAsString(str: string | string[]): string {
   return str;
 }
 
+export const runtime = "edge";
+
 export default function PostPage({
   params,
 }: {

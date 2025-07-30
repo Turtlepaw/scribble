@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack -H 127.0.0.1 -p 3000",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "pages:build": "npx @cloudflare/next-on-pages",
+"preview": "npm run pages:build && wrangler pages dev",
+"deploy": "npm run pages:build && wrangler pages deploy"
   },
   "dependencies": {
     "@atproto/api": "^0.15.27",

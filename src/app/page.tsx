@@ -14,6 +14,8 @@ import Link from "next/link";
 import Masonry from "react-masonry-css";
 import { motion } from "motion/react";
 
+export const runtime = "edge";
+
 export default function Home() {
   const [timeline, setTimeline] = useState<AppBskyFeedDefs.FeedViewPost[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
