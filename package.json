@@ -8,12 +8,13 @@
     "start": "next start",
     "lint": "next lint",
     "pages:build": "npx @cloudflare/next-on-pages",
-"preview": "npm run pages:build && wrangler pages dev",
-"deploy": "npm run pages:build && wrangler pages deploy"
+    "preview": "npm run pages:build && wrangler pages dev",
+    "deploy": "npm run pages:build && wrangler pages deploy"
   },
   "dependencies": {
     "@atproto/api": "^0.15.27",
     "@atproto/oauth-client-browser": "^0.3.27",
+    "@cloudflare/next-on-pages": "^1.13.13",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
