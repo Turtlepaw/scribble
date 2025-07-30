@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "./ModeToggle"; // for dark mode toggle
-import { Menu, X } from "lucide-react";
+import { LoaderCircle, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/useAuth";
 import {
@@ -118,6 +118,7 @@ export function Navbar() {
 function LoginButton() {
   const { login } = useAuth();
   const [handle, setHandle] = useState("");
+  const [isLoading, setLoading] = useState(false);
   return (
     <Dialog>
       <DialogTrigger>
@@ -140,11 +141,13 @@ function LoginButton() {
         <DialogFooter>
           <Button
             onClick={() => {
+              setLoading(true);
               login(handle);
             }}
             disabled={!handle}
             className="cursor-pointer"
           >
+            {isLoading && <LoaderCircle className="animate-spin ml-2" />}
             Sign In
           </Button>
         </DialogFooter>

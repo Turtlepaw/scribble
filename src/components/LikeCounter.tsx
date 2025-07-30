@@ -47,11 +47,11 @@ function LikeCounter({ count, className = "" }: LikeCounterProps) {
       >
         {/* Old number (what we're transitioning FROM) */}
         <div className="flex items-center justify-center h-[1.2em]">
-          {String(previousCount)}
+          {String(direction == "down" ? displayCount : previousCount)}
         </div>
         {/* New number (what we're transitioning TO) */}
         <div className="flex items-center justify-center h-[1.2em]">
-          {String(displayCount)}
+          {String(direction == "up" ? displayCount : previousCount)}
         </div>
       </motion.div>
     </div>

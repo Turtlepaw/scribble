@@ -18,7 +18,7 @@ export default function Home() {
   const [timeline, setTimeline] = useState<AppBskyFeedDefs.FeedViewPost[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { agent } = useAuth();
+  const { agent, session } = useAuth();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const seenImageUrls = new Set<string>();
@@ -127,10 +127,23 @@ export default function Home() {
     768: 1,
   };
 
+  console.log(session);
+
+  if (session == null) {
+    return (
+      <div className="items-center justify-items-center text-center">
+        <h1 className="text-lg mb-0.5 font-medium">
+          You&apos;re not logged in
+        </h1>
+        <p>Log in to see your feeds</p>
+      </div>
+    );
+  }
+
   return (
     <div className="items-center justify-items-center">
       <div className="h-5" />
-      <main className="">
+      <main className="px-5">
         <Masonry
           breakpointCols={breakpointColumnsObj}
           className="flex -mx-2 w-auto"
