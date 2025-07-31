@@ -134,7 +134,7 @@ function LoginButton() {
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
               placeholder="example.bsky.social"
-              className="text-white"
+              className="dark:text-white text-black"
             />
           </DialogDescription>
         </DialogHeader>

@@ -114,7 +114,7 @@ export default function PostPage({
             <BskyImage
               embed={post.embed}
               fill
-              className="absolute inset-0 object-cover blur-3xl scale-110 z-0 opacity-10"
+              className="absolute inset-0 object-cover blur-3xl scale-110 z-0 opacity-30"
             />
 
             {/* Foreground Content */}
