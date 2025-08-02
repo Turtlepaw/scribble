@@ -34,6 +34,7 @@ export function useFetchTimeline() {
     setTimelineLoading,
     setCustomFeed,
     setCustomFeedLoading,
+    customFeeds,
   } = useFeedStore();
   const seenImageUrls = useRef<Set<string>>(new Set());
 
@@ -46,14 +47,15 @@ export function useFetchTimeline() {
       } else setTimelineLoading(true);
       try {
         if (feed && feed != "timeline") {
+          const cursor = customFeeds?.[feed]?.cursor ?? undefined;
           const response = feed.includes("list")
             ? await agent.app.bsky.feed.getListFeed({
-                cursor: timeline.cursor,
+                cursor: cursor,
                 limit: 100,
                 list: feed,
               })
             : await agent.app.bsky.feed.getFeed({
-                cursor: timeline.cursor,
+                cursor: cursor,
                 limit: 100,
                 feed: feed,
               });
