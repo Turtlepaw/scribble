@@ -3,7 +3,7 @@
 import { Feed } from "@/components/Feed";
 import { useFetchTimeline } from "@/lib/hooks/useTimeline";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useFeedStore } from "@/lib/stores/feeds";
 import { useFeeds } from "@/lib/hooks/useFeeds";
 import { LoaderCircle } from "lucide-react";
@@ -18,12 +18,13 @@ export default function Home() {
   const { feeds } = useFeedDefsStore();
   const { session } = useAuth();
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const [feed, setFeed] = useState<"timeline" | string>("timeline");
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          fetchFeed();
+          fetchFeed(feed);
         }
       },
       { rootMargin: "200px" }
@@ -58,14 +59,23 @@ export default function Home() {
     <main className="px-5">
       <Tabs defaultValue="timeline" className="w-full">
         <TabsList
-          className="flex w-full overflow-x-auto whitespace-nowrap no-scrollbar px-4 space-x-4"
+          className="overflow-x-auto w-full justify-start" //"flex w-full overflow-x-auto whitespace-nowrap no-scrollbar pl-10 pr-4 space-x-4"
           style={{ justifyItems: "unset" }}
         >
-          <TabsTrigger value="timeline" className="shrink-0 ml-10">
+          <TabsTrigger
+            onClick={() => setFeed("timeline")}
+            value="timeline"
+            className="shrink-0"
+          >
             Timeline
           </TabsTrigger>
           {Object.entries(feeds).map(([value, it]) => (
-            <TabsTrigger key={value} value={value} className="shrink-0">
+            <TabsTrigger
+              onClick={() => setFeed(value)}
+              key={value}
+              value={value}
+              className="shrink-0"
+            >
               {it?.displayName}
             </TabsTrigger>
           ))}
@@ -78,9 +88,16 @@ export default function Home() {
           />
         </TabsContent>
 
-        {Object.entries(feeds).map(([value]) => (
-          <TabsContent key={value} value={value}></TabsContent>
-        ))}
+        {Object.entries(feeds)
+          .filter((it) => feedStore.customFeeds?.[it[0]] != null)
+          .map(([value]) => (
+            <TabsContent key={value} value={value}>
+              <Feed
+                feed={feedStore.customFeeds[value].posts}
+                isLoading={feedStore.customFeeds[value].isLoading}
+              />
+            </TabsContent>
+          ))}
       </Tabs>
 
       <div ref={sentinelRef} className="h-1" />

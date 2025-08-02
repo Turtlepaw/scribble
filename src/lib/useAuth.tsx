@@ -66,9 +66,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const result = await c.init();
         if (result?.session) {
+          console.log("session found", result);
+          localStorage.setItem("did", result.session.did);
           const ag = new Agent(result.session);
           setSession(result.session);
           setAgent(ag);
+        } else {
+          const did = localStorage.getItem("did");
+
+          console.log("restoring", did);
+          if (did != null) {
+            const result = await c.restore(did);
+            const ag = new Agent(result);
+            setSession(result);
+            setAgent(ag);
+          }
         }
       } catch (err) {
         console.error("OAuth init failed", err);
