@@ -84,14 +84,6 @@ export function Navbar() {
           ) : (
             <LoginButton />
           )}
-          <Button
-            variant="ghost"
-            className="block md:hidden cursor-pointer"
-            onClick={() => setOpen(!open)}
-            aria-label="Toggle Menu"
-          >
-            {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
         </div>
       </div>
 
