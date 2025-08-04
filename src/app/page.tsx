@@ -10,15 +10,19 @@ import { LoaderCircle } from "lucide-react";
 import { useFeedDefsStore } from "@/lib/stores/feedDefs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useAuth } from "@/lib/useAuth";
+import { useBoards } from "@/lib/hooks/useBoards";
 
 export default function Home() {
   const { fetchFeed } = useFetchTimeline();
   const feedStore = useFeedStore();
   const { isLoading } = useFeeds();
-  const { feeds } = useFeedDefsStore();
+  const { feeds, defaultFeed, setDefaultFeed } = useFeedDefsStore();
   const { session } = useAuth();
+  useBoards();
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const [feed, setFeed] = useState<"timeline" | string>("timeline");
+  const [feed, setFeed] = useState<"timeline" | string>(
+    defaultFeed ?? "timeline"
+  );
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -35,7 +39,11 @@ export default function Home() {
     return () => {
       if (sentinel) observer.unobserve(sentinel);
     };
-  }, [fetchFeed]);
+  }, [fetchFeed, feed]);
+
+  useEffect(() => {
+    fetchFeed(feed);
+  }, [feed]);
 
   if (session == null) {
     return (
@@ -57,13 +65,16 @@ export default function Home() {
 
   return (
     <main className="px-5">
-      <Tabs defaultValue="timeline" className="w-full">
+      <Tabs defaultValue={defaultFeed} className="w-full">
         <TabsList
           className="overflow-x-auto w-full justify-start" //"flex w-full overflow-x-auto whitespace-nowrap no-scrollbar pl-10 pr-4 space-x-4"
           style={{ justifyItems: "unset" }}
         >
           <TabsTrigger
-            onClick={() => setFeed("timeline")}
+            onClick={() => {
+              setFeed("timeline");
+              setDefaultFeed("timeline");
+            }}
             value="timeline"
             className="shrink-0"
           >
@@ -71,7 +82,10 @@ export default function Home() {
           </TabsTrigger>
           {Object.entries(feeds).map(([value, it]) => (
             <TabsTrigger
-              onClick={() => setFeed(value)}
+              onClick={() => {
+                setFeed(value);
+                setDefaultFeed(value);
+              }}
               key={value}
               value={value}
               className="shrink-0"

@@ -1,5 +1,6 @@
 "use client";
 import LikeCounter from "@/components/LikeCounter";
+import { SaveButton } from "@/components/SaveButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/useAuth";
@@ -230,21 +231,25 @@ export default function PostPage({
                   </div>
 
                   {/* External Link */}
-                  <Link
-                    href={
-                      "https://bsky.app/profile/" +
-                      post.author.did +
-                      "/post/" +
-                      post.uri.split("/").pop()
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="outline" className="cursor-pointer">
-                      Open in Bluesky
-                      <ExternalLink className="w-4 h-4" />
-                    </Button>
-                  </Link>
+                  <div>
+                    <SaveButton image={Number(imageIndex)} post={post} />
+                    <Link
+                      href={
+                        "https://bsky.app/profile/" +
+                        post.author.did +
+                        "/post/" +
+                        post.uri.split("/").pop()
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-2"
+                    >
+                      <Button variant="outline" className="cursor-pointer">
+                        Open in Bluesky
+                        <ExternalLink className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

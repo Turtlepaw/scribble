@@ -8,6 +8,8 @@ export interface BasicFeedItem {
 type FeedDefsState = {
   feeds: Record<string, BasicFeedItem>;
   setFeedDef: (id: string, feed: BasicFeedItem) => void;
+  defaultFeed: string;
+  setDefaultFeed: (feed: string) => void;
 };
 
 export const useFeedDefsStore = create<FeedDefsState>()(
@@ -21,11 +23,17 @@ export const useFeedDefsStore = create<FeedDefsState>()(
             [id]: feed,
           },
         })),
+      defaultFeed: "timeline",
+      setDefaultFeed: (feed) =>
+        set(() => ({
+          defaultFeed: feed,
+        })),
     }),
     {
       name: "feed-defs",
       partialize: (state) => ({
-        feeds: state.feeds, // Only persist this part
+        feeds: state.feeds,
+        defaultFeed: state.defaultFeed,
       }),
     }
   )

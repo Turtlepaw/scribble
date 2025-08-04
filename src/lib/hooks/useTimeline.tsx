@@ -5,9 +5,8 @@ import { useAuth } from "@/lib/useAuth";
 import { useFeedStore } from "../stores/feeds";
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 
-function filterPosts(posts: FeedViewPost[], seenImageUrls: Set<string>) {
+function filterPosts(posts: FeedViewPost[], seenPosts: Set<string>) {
   return posts.filter((it) => {
-    if (it.reason?.$type === "app.bsky.feed.defs#reasonRepost") return false;
     if (
       !(
         AppBskyEmbedImages.isMain(it.post.embed) ||
@@ -16,11 +15,9 @@ function filterPosts(posts: FeedViewPost[], seenImageUrls: Set<string>) {
     )
       return false;
 
-    const images = (it.post.embed as AppBskyEmbedImages.View)?.images || [];
-    const hasNew = images.some((img) => !seenImageUrls.has(img.fullsize));
-    if (!hasNew) return false;
+    if (seenPosts.has(it.post.uri)) return false;
+    seenPosts.add(it.post.uri);
 
-    images.forEach((img) => seenImageUrls.add(img.fullsize));
     return true;
   });
 }
@@ -29,12 +26,11 @@ export function useFetchTimeline() {
   const { agent } = useAuth();
   const {
     timeline,
-    setTimeline,
     appendTimeline,
     setTimelineLoading,
-    setCustomFeed,
     setCustomFeedLoading,
     customFeeds,
+    appendCustomFeed,
   } = useFeedStore();
   const seenImageUrls = useRef<Set<string>>(new Set());
 
@@ -61,13 +57,12 @@ export function useFetchTimeline() {
               });
 
           if (!response.success) throw new Error("Failed to fetch timeline");
-          setCustomFeed(
-            feed,
-            filterPosts(response.data.feed, seenImageUrls.current).map(
-              (it) => it.post
-            ),
-            response.data.cursor
-          );
+          const filtered = filterPosts(
+            response.data.feed,
+            seenImageUrls.current
+          ).map((it) => it.post);
+          console.log("feed", filtered);
+          appendCustomFeed(feed, filtered, response.data.cursor);
         } else {
           const response = await agent.getTimeline({
             cursor: timeline.cursor,
@@ -92,7 +87,7 @@ export function useFetchTimeline() {
         } else setTimelineLoading(false);
       }
     },
-    [agent, timeline]
+    [agent, timeline, customFeeds]
   );
 
   useEffect(() => {
