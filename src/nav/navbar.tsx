@@ -76,6 +76,11 @@ export function Navbar() {
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {/* <DropdownMenuItem>Profile</DropdownMenuItem> */}
+                <Link href={"/boards"}>
+                  <DropdownMenuItem className="cursor-pointer">
+                    My Boards
+                  </DropdownMenuItem>
+                </Link>
                 <DropdownMenuItem className="cursor-pointer" onClick={logout}>
                   Logout
                 </DropdownMenuItem>

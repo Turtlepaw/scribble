@@ -22,7 +22,7 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { use, useEffect, useMemo, useRef, useState } from "react";
 
-function paramAsString(str: string | string[]): string {
+export function paramAsString(str: string | string[]): string {
   if (Array.isArray(str)) {
     return str[0];
   }

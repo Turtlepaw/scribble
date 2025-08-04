@@ -1,0 +1,45 @@
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import * as z from "zod";
+import { createMapStorage } from "../utils/mapStorage";
+
+export const BoardItem = z.object({
+  url: z.string(),
+  list: z.string(),
+  $type: z.string(),
+  createdAt: z.string(),
+});
+
+export type BoardItem = z.infer<typeof BoardItem>;
+
+type BoardItemsState = {
+  boardItems: Map<string, BoardItem>;
+  setBoardItem: (rkey: string, board: BoardItem) => void;
+  isLoading: boolean;
+  setLoading: (value: boolean) => void;
+};
+
+export const useBoardItemsStore = create<BoardItemsState>()(
+  persist(
+    (set) => ({
+      boardItems: new Map(),
+      setBoardItem: (rkey, board) =>
+        set((state) => ({
+          boardItems: new Map(state.boardItems).set(rkey, board),
+        })),
+      isLoading: true,
+      setLoading(value) {
+        set(() => ({
+          isLoading: value,
+        }));
+      },
+    }),
+    {
+      name: "board-items",
+      partialize: (state) => ({
+        items: state.boardItems,
+      }),
+      storage: createMapStorage("boardItems"),
+    }
+  )
+);

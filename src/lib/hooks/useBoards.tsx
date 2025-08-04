@@ -5,6 +5,7 @@ import { useFeedDefsStore } from "../stores/feedDefs";
 import { AtUri } from "@atproto/api";
 import { Board, useBoardsStore } from "../stores/boards";
 import { LIST_COLLECTION } from "@/constants";
+import { useBoardItems } from "./useBoardItems";
 
 export function useBoards() {
   const { agent } = useAuth();
@@ -28,6 +29,7 @@ export function useBoards() {
         }
       } finally {
         setLoading(false);
+        store.setLoading(false);
       }
     };
     loadBoards();
@@ -38,5 +40,6 @@ export function useBoards() {
 
 export function BoardsProvider({ children }: PropsWithChildren) {
   useBoards();
+  useBoardItems();
   return children;
 }
