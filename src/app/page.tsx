@@ -18,7 +18,6 @@ export default function Home() {
   const { isLoading } = useFeeds();
   const { feeds, defaultFeed, setDefaultFeed } = useFeedDefsStore();
   const { session } = useAuth();
-  useBoards();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [feed, setFeed] = useState<"timeline" | string>(
     defaultFeed ?? "timeline"

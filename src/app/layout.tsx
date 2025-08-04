@@ -6,6 +6,7 @@ import { Navbar } from "@/nav/navbar";
 import { AuthProvider } from "@/lib/useAuth";
 import { ProfileProvider } from "@/lib/useProfile";
 import { Toaster } from "sonner";
+import { BoardsProvider } from "@/lib/hooks/useBoards";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,10 +37,12 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             <ProfileProvider>
-              <div className="min-h-screen flex flex-col">
-                <Navbar />
-                <main className="flex-1 py-6">{children}</main>
-              </div>
+              <BoardsProvider>
+                <div className="min-h-screen flex flex-col">
+                  <Navbar />
+                  <main className="flex-1 py-6">{children}</main>
+                </div>
+              </BoardsProvider>
             </ProfileProvider>
           </AuthProvider>
         </ThemeProvider>

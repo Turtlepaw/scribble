@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+"use client";
+import { PropsWithChildren, useEffect, useState } from "react";
 import { useAuth } from "@/lib/useAuth";
 import { useFeedDefsStore } from "../stores/feedDefs";
 import { AtUri } from "@atproto/api";
@@ -33,4 +34,9 @@ export function useBoards() {
   }, [agent]);
 
   return { isLoading };
+}
+
+export function BoardsProvider({ children }: PropsWithChildren) {
+  useBoards();
+  return children;
 }
