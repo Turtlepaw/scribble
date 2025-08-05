@@ -62,6 +62,8 @@ export default function Home() {
       </div>
     );
 
+  const triggerClass =
+    "shrink-0 cursor-pointer dark:hover:bg-white/5 hover:bg-black/5 transition-colors";
   return (
     <main className="px-5">
       <Tabs defaultValue={defaultFeed} className="w-full">
@@ -75,7 +77,7 @@ export default function Home() {
               setDefaultFeed("timeline");
             }}
             value="timeline"
-            className="shrink-0"
+            className={triggerClass}
           >
             Timeline
           </TabsTrigger>
@@ -87,7 +89,7 @@ export default function Home() {
               }}
               key={value}
               value={value}
-              className="shrink-0"
+              className={triggerClass}
             >
               {it?.displayName}
             </TabsTrigger>

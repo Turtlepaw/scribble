@@ -39,7 +39,7 @@ export function Navbar() {
           href="/"
           className="text-xl font-bold hover:text-black/70 dark:hover:text-white/70 transition-colors"
         >
-          Scribbleboard
+          pin.to.it
         </Link>
 
         <nav className="hidden md:flex gap-4">
