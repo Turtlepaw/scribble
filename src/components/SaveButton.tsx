@@ -17,6 +17,8 @@ import { BoardsPicker } from "./BoardPicker";
 import { toast } from "sonner";
 import { AtUri } from "@atproto/api";
 import { LIST_COLLECTION, LIST_ITEM_COLLECTION } from "@/constants";
+import { FeedItem } from "./Feed";
+import { BoardItem, useBoardItemsStore } from "@/lib/stores/boardItems";
 
 export function SaveButton({ post, image }: { post: PostView; image: number }) {
   const { agent } = useAuth();
@@ -24,6 +26,7 @@ export function SaveButton({ post, image }: { post: PostView; image: number }) {
   const [isOpen, setOpen] = useState(false);
   const [selectedBoard, setSelectedBoard] = useState("");
   const boardsStore = useBoardsStore();
+  const { setBoardItem } = useBoardItemsStore();
 
   if (agent == null) return <div>not logged in :(</div>;
   return (
@@ -82,7 +85,7 @@ export function SaveButton({ post, image }: { post: PostView; image: number }) {
 
               setLoading(true);
               try {
-                const record = {
+                const record: BoardItem = {
                   url: post.uri + `?image=${image}`,
                   list: AtUri.make(
                     agent?.assertDid,
@@ -99,6 +102,8 @@ export function SaveButton({ post, image }: { post: PostView; image: number }) {
                 });
 
                 if (result?.success) {
+                  const rkey = new AtUri(result.data.uri).rkey;
+                  setBoardItem(rkey, record);
                   toast("Image saved");
                   setOpen(false);
                 } else {

@@ -28,6 +28,7 @@ export function useBoardItems() {
           const safeItem = BoardItem.safeParse(item.value);
           if (safeItem.success)
             store.setBoardItem(new AtUri(item.uri).rkey, safeItem.data);
+          else console.warn(`${item.uri} could not be parsed safely`);
         }
       } finally {
         setLoading(false);

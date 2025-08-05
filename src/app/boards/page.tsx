@@ -28,6 +28,10 @@ import z from "zod";
 
 export const runtime = "edge";
 
+function truncateString(str: string, num: number) {
+  return str.length > num ? str.slice(0, num) + "..." : str;
+}
+
 export default function BoardsPage() {
   const { boards, isLoading } = useBoardsStore();
   const { agent } = useAuth();
@@ -51,12 +55,13 @@ export default function BoardsPage() {
       <div className="w-full max-w-4xl flex justify-center">
         <div className="inline-block">
           {Array.from(boards.entries()).map(([key, it]) => (
-            <Link
-              href={`/board/${agent?.did ?? "unknown"}/${key}`}
-              key={key}
-              className="bg-accent/80 p-4 rounded-lg m-2 hover:bg-accent"
-            >
-              {it.name}
+            <Link href={`/board/${agent?.did ?? "unknown"}/${key}`} key={key}>
+              <div className="bg-black/10 dark:bg-white/40 p-4 rounded-lg m-2 hover:bg-black/15 dark:hover:bg-white/60 min-w-lg min-h-2/5 transition-colors">
+                <h2 className="font-medium text-lg">{it.name}</h2>
+                <p className="text-sm text-black/80 dark:text-white/80">
+                  {truncateString(it.description, 50)}
+                </p>
+              </div>
             </Link>
           ))}
         </div>

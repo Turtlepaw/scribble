@@ -15,6 +15,7 @@ export type BoardItem = z.infer<typeof BoardItem>;
 type BoardItemsState = {
   boardItems: Map<string, BoardItem>;
   setBoardItem: (rkey: string, board: BoardItem) => void;
+  removeBoardItem: (rkey: string) => void;
   isLoading: boolean;
   setLoading: (value: boolean) => void;
 };
@@ -27,6 +28,14 @@ export const useBoardItemsStore = create<BoardItemsState>()(
         set((state) => ({
           boardItems: new Map(state.boardItems).set(rkey, board),
         })),
+      removeBoardItem: (rkey) =>
+        set((state) => {
+          const newMap = new Map(state.boardItems);
+          newMap.delete(rkey);
+          return {
+            boardItems: newMap,
+          };
+        }),
       isLoading: true,
       setLoading(value) {
         set(() => ({

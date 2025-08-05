@@ -5,6 +5,7 @@ import {
   AppBskyEmbedImages,
   AppBskyFeedDefs,
   AppBskyFeedPost,
+  AtUri,
 } from "@atproto/api";
 import { LoaderCircle } from "lucide-react";
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -15,19 +16,163 @@ import Link from "next/link";
 import Masonry from "react-masonry-css";
 import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { SaveButton } from "./SaveButton";
+import { UnsaveButton } from "./UnsaveButton";
+
+export type FeedItem = {
+  id: string;
+  imageUrl: string;
+  alt?: string;
+  author?: {
+    avatar?: string;
+    displayName?: string;
+    handle: string;
+    did?: string;
+  };
+  text?: string;
+  uri: string;
+  aspectRatio?: { width: number; height: number };
+  blurDataURL?: string;
+};
+
+// Props for the Feed component
+interface FeedProps {
+  /**
+   * Map of the index of the embedded media and post view
+   */
+  feed?: [number, PostView][];
+
+  isLoading?: boolean;
+  showUnsaveButton?: boolean;
+  onUnsave?: (imageUrl: string, index: number) => void;
+}
 
 function getText(post: PostView) {
   if (!AppBskyFeedPost.isRecord(post.record)) return;
   return (post.record as AppBskyFeedPost.Record).text;
 }
 
+function getImageFromItem(it: PostView, index: number) {
+  if (
+    AppBskyEmbedImages.isMain(it.embed) ||
+    AppBskyEmbedImages.isView(it.embed)
+  ) {
+    return it.embed.images[index];
+  } else return null;
+}
+
+function ImageCard({
+  item,
+  showUnsaveButton,
+  onUnsave,
+  index,
+}: {
+  item: PostView;
+  showUnsaveButton?: boolean;
+  onUnsave?: (imageUrl: string, index: number) => void;
+  index: number;
+}) {
+  const image = getImageFromItem(item, index);
+
+  if (!image) return;
+
+  const ActionButton = showUnsaveButton ? UnsaveButton : SaveButton;
+  const txt = getText(item);
+
+  return (
+    <div key={item.uri} className="relative group">
+      {ActionButton && (
+        <div className="absolute z-30 top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <ActionButton image={index} post={item} />
+        </div>
+      )}
+      <Link
+        href={`/${item.author.did}/${AtUri.make(item.uri).rkey}`}
+        className="block"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          whileTap={{ scale: 0.95 }}
+          className="group relative w-full min-h-[120px] min-w-[120px] overflow-hidden rounded-xl bg-gray-900"
+        >
+          {/* Blurred background */}
+          <Image
+            src={image.fullsize}
+            alt=""
+            fill
+            placeholder={image.thumb ? "blur" : "empty"}
+            blurDataURL={image.thumb}
+            className="object-cover filter blur-xl scale-110 opacity-30"
+          />
+
+          {/* Centered foreground image */}
+          <div className="relative z-10 flex items-center justify-center w-full min-h-[120px]">
+            <Image
+              src={image.fullsize}
+              alt={image.alt || ""}
+              placeholder={image.thumb ? "blur" : "empty"}
+              blurDataURL={image.thumb}
+              width={image.aspectRatio?.width ?? 400}
+              height={image.aspectRatio?.height ?? 400}
+              className="object-contain max-w-full max-h-full rounded-lg"
+            />
+          </div>
+
+          {/* Author info and text overlay (only if author exists) */}
+          {item.author && (
+            <div className="absolute inset-0 z-20 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
+              <div className="w-fit self-start" />
+
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <Avatar>
+                    <AvatarImage src={item.author.avatar} />
+                    <AvatarFallback>
+                      {item.author.displayName || item.author.handle}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col leading-tight">
+                    <span>{item.author.displayName || item.author.handle}</span>
+                    <span className="text-white/70 text-[0.75rem]">
+                      @{item.author.handle}
+                    </span>
+                  </div>
+                </div>
+
+                {txt && (
+                  <div className="text-sm">
+                    {txt.length > 100 ? txt.slice(0, 100) + "…" : txt}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </motion.div>
+      </Link>
+    </div>
+  );
+}
+
+export function feedAsMap(feed: PostView[]) {
+  const map: [number, PostView][] = [];
+  for (const it of feed) {
+    if (
+      AppBskyEmbedImages.isMain(it.embed) ||
+      AppBskyEmbedImages.isView(it.embed)
+    ) {
+      it.embed.images.forEach((image, index) => map.push([index, it]));
+    }
+  }
+  return map;
+}
+
 export function Feed({
   feed,
   isLoading = false,
-}: {
-  feed: PostView[];
-  isLoading?: boolean;
-}) {
+  showUnsaveButton = false,
+  onUnsave,
+}: FeedProps) {
   const breakpointColumnsObj = {
     default: 5,
     1536: 4,
@@ -43,86 +188,15 @@ export function Feed({
         className="flex -mx-2 w-auto"
         columnClassName="px-2 space-y-4"
       >
-        {feed.flatMap((post) => {
-          if (!AppBskyEmbedImages.isView(post.embed)) return [];
-          const images = post.embed.images || [];
-          if (images.length === 0) return [];
-          const t: string = getText(post) || "";
-          const maxLength = 100;
-          return images.map((image, index) => (
-            <div key={image.fullsize} className="relative group">
-              <div className="absolute z-30 top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                <SaveButton post={post} image={index} />
-              </div>
-              <Link
-                href={`/${post.author.did}/${post.uri
-                  .split("/")
-                  .pop()}?image=${index}`}
-                key={image.fullsize}
-                className="block"
-              >
-                <motion.div
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  whileTap={{ scale: 0.99 }}
-                  className="group relative w-full min-h-[120px] min-w-[120px] overflow-hidden rounded-xl bg-gray-900"
-                >
-                  {/* Blurred background */}
-                  <Image
-                    src={image.fullsize}
-                    alt=""
-                    fill
-                    placeholder="blur"
-                    blurDataURL={image.thumb}
-                    className="object-cover filter blur-xl scale-110 opacity-30"
-                  />
-
-                  {/* Centered foreground image */}
-                  <div className="relative z-10 flex items-center justify-center w-full min-h-[120px]">
-                    <Image
-                      src={image.fullsize}
-                      alt={image.alt}
-                      placeholder="blur"
-                      blurDataURL={image.thumb}
-                      width={image?.aspectRatio?.width ?? 400}
-                      height={image?.aspectRatio?.height ?? 400}
-                      className="object-contain max-w-full max-h-full rounded-lg"
-                    />
-                  </div>
-
-                  {/* Bottom: Avatar, display name, and handle */}
-                  <div className="absolute inset-0 z-20 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
-                    <div className="w-fit self-start" />
-
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <Avatar>
-                          <AvatarImage src={post.author.avatar} />
-                          <AvatarFallback>
-                            {post.author.displayName || post.author.handle}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col leading-tight">
-                          <span>
-                            {post.author.displayName || post.author.handle}
-                          </span>
-                          <span className="text-white/70 text-[0.75rem]">
-                            @{post.author.handle}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="text-sm">
-                        {t.length > maxLength ? t.slice(0, maxLength) + "…" : t}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </Link>
-            </div>
-          ));
-        })}
+        {feed?.map(([index, item]) => (
+          <ImageCard
+            key={item.uri}
+            item={item}
+            index={index}
+            showUnsaveButton={showUnsaveButton}
+            onUnsave={onUnsave}
+          />
+        ))}
       </Masonry>
 
       {isLoading && (

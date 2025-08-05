@@ -1,6 +1,6 @@
 "use client";
 
-import { Feed } from "@/components/Feed";
+import { Feed, feedAsMap } from "@/components/Feed";
 import { useFetchTimeline } from "@/lib/hooks/useTimeline";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useRef, useEffect, useState } from "react";
@@ -96,7 +96,7 @@ export default function Home() {
 
         <TabsContent value="timeline">
           <Feed
-            feed={feedStore.timeline.posts.map((it) => it.post)}
+            feed={feedAsMap(feedStore.timeline.posts.map((it) => it.post))}
             isLoading={feedStore.timeline.isLoading}
           />
         </TabsContent>
@@ -106,7 +106,7 @@ export default function Home() {
           .map(([value]) => (
             <TabsContent key={value} value={value}>
               <Feed
-                feed={feedStore.customFeeds[value].posts}
+                feed={feedAsMap(feedStore.customFeeds[value].posts)}
                 isLoading={feedStore.customFeeds[value].isLoading}
               />
             </TabsContent>
