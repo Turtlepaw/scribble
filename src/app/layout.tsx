@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Scribbleboard",
+  title: "pin.to.it",
   description: "Simple scrapboard client",
 };
 
