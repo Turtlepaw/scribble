@@ -17,6 +17,7 @@ import Masonry from "react-masonry-css";
 import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { SaveButton } from "./SaveButton";
 import { UnsaveButton } from "./UnsaveButton";
+import { LikeButton } from "./LikeButton";
 
 export type FeedItem = {
   id: string;
@@ -80,11 +81,17 @@ function ImageCard({
 
   return (
     <div key={item.uri} className="relative group">
-      {ActionButton && (
-        <div className="absolute z-30 top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
-          <ActionButton image={index} post={item} />
-        </div>
-      )}
+      {/* Save/Unsave button – top-left */}
+      <div className="absolute top-3 left-3 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
+        {ActionButton && <ActionButton image={index} post={item} />}
+      </div>
+
+      {/* Like button – top-right */}
+      <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
+        <LikeButton post={item} />
+      </div>
+
+      {/* Link wraps image only */}
       <Link
         href={`/${item.author.did}/${AtUri.make(item.uri).rkey}`}
         className="block"
@@ -106,7 +113,7 @@ function ImageCard({
             className="object-cover filter blur-xl scale-110 opacity-30"
           />
 
-          {/* Centered foreground image */}
+          {/* Foreground image */}
           <div className="relative z-10 flex items-center justify-center w-full min-h-[120px]">
             <Image
               src={image.fullsize}
@@ -119,7 +126,7 @@ function ImageCard({
             />
           </div>
 
-          {/* Author info and text overlay (only if author exists) */}
+          {/* Author info */}
           {item.author && (
             <div className="absolute inset-0 z-20 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
               <div className="w-fit self-start" />

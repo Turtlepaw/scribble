@@ -1,4 +1,5 @@
 "use client";
+import { LikeButton } from "@/components/LikeButton";
 import LikeCounter from "@/components/LikeCounter";
 import { SaveButton } from "@/components/SaveButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -34,7 +35,6 @@ export default function PostPage({
   const [loading, setLoading] = useState(true);
   const [post, setPost] = useState<PostView | null>(null);
   const [error, setError] = useState<Error | null>(null);
-  const [likeUri, setLikeUri] = useState<string | null>(null);
   const { agent } = useAuth();
 
   useEffect(() => console.log("Agent", agent), [agent]);
@@ -163,43 +163,7 @@ export default function PostPage({
                 {/* Bottom Section - Stats and External Link */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div className="flex flex-wrap gap-4 sm:gap-6">
-                    <Button
-                      className="flex items-center gap-2 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5"
-                      variant={"ghost"}
-                      disabled={!post.viewer}
-                      onClick={async () => {
-                        if (!agent || !post.viewer) return;
-                        if (likeUri == null) {
-                          const uri = await agent.like(post.uri, post.cid);
-                          setLikeUri(uri.uri);
-                        } else {
-                          agent.deleteLike(likeUri);
-                        }
-
-                        //@ts-expect-error ignore this
-                        setPost((prev) => ({
-                          ...prev,
-                          viewer: {
-                            ...prev!.viewer,
-                            like: !prev!.viewer?.like,
-                          },
-                          likeCount:
-                            (prev!.likeCount || 0) +
-                            (prev!.viewer?.like ? -1 : 1),
-                        }));
-                      }}
-                    >
-                      <Heart
-                        className={clsx(
-                          "w-5 h-5",
-                          post.viewer?.like
-                            ? "fill-red-500 text-red-500"
-                            : "text-black/80 dark:text-white/80"
-                        )}
-                      />
-                      <LikeCounter count={post.likeCount || 0} />
-                    </Button>
-
+                    <LikeButton post={post} />
                     <div className="flex items-center gap-2">
                       <MessagesSquare className="w-5 h-5 text-black/80 dark:text-white/80" />
                       <span className="text-sm font-medium text-black dark:text-white">
