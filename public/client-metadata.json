@@ -1,12 +1,12 @@
 {
-    "client_id": "https://scribbleboard.pages.dev/client-metadata.json",
+    "client_id": "https://pin.to.it/client-metadata.json",
     "client_name": "Scribbleboard",
-    "client_uri": "https://scribbleboard.pages.dev",
-    "logo_uri": "https://scribbleboard.pages.dev/logo.png",
-    "tos_uri": "https://scribbleboard.pages.dev/tos",
-    "policy_uri": "https://scribbleboard.pages.dev/policy",
+    "client_uri": "https://pin.to.it",
+    "logo_uri": "https://pin.to.it/logo.png",
+    "tos_uri": "https://pin.to.it/tos",
+    "policy_uri": "https://pin.to.it/policy",
     "redirect_uris": [
-        "https://scribbleboard.pages.dev"
+        "https://pin.to.it"
     ],
     "scope": "atproto transition:generic",
     "grant_types": [
