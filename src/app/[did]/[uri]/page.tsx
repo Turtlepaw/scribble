@@ -4,7 +4,7 @@ import LikeCounter from "@/components/LikeCounter";
 import { SaveButton } from "@/components/SaveButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { paramAsString } from "@/lib/utils/params";
 import { $Typed, AtUri } from "@atproto/api";
 import { AppBskyEmbedImages, AppBskyFeedPost } from "@atproto/api/dist/client";

@@ -1,6 +1,6 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/lib/hooks/useAuth";
 import {
   AppBskyEmbedImages,
   AppBskyFeedDefs,

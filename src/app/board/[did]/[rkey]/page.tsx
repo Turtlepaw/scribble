@@ -4,7 +4,7 @@ import { LoaderCircle } from "lucide-react";
 import { useBoardItemsStore } from "@/lib/stores/boardItems";
 import { useBoardsStore } from "@/lib/stores/boards";
 import { useCurrentBoard } from "@/lib/stores/useCurrentBoard";
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { AtUri } from "@atproto/api";
 import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { useParams } from "next/navigation";

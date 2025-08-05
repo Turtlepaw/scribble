@@ -9,7 +9,7 @@ import { useFeeds } from "@/lib/hooks/useFeeds";
 import { LoaderCircle } from "lucide-react";
 import { useFeedDefsStore } from "@/lib/stores/feedDefs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { useBoards } from "@/lib/hooks/useBoards";
 
 export default function Home() {
@@ -17,7 +17,7 @@ export default function Home() {
   const feedStore = useFeedStore();
   const { isLoading } = useFeeds();
   const { feeds, defaultFeed, setDefaultFeed } = useFeedDefsStore();
-  const { session } = useAuth();
+  const { session, loading } = useAuth();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [feed, setFeed] = useState<"timeline" | string>(
     defaultFeed ?? "timeline"
@@ -55,7 +55,7 @@ export default function Home() {
     );
   }
 
-  if (isLoading)
+  if (isLoading || loading)
     return (
       <div className="flex justify-center py-6 text-sm text-black/70 dark:text-white/70">
         <LoaderCircle className="animate-spin" />

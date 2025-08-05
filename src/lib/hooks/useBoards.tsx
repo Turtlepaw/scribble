@@ -1,6 +1,6 @@
 "use client";
 import { PropsWithChildren, useEffect, useState } from "react";
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { useFeedDefsStore } from "../stores/feedDefs";
 import { AtUri } from "@atproto/api";
 import { Board, useBoardsStore } from "../stores/boards";

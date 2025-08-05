@@ -1,6 +1,6 @@
 // components/LoginButton.tsx
 "use client";
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function LoginButton() {
   const { login, loading, session } = useAuth();

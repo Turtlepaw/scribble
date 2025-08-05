@@ -8,7 +8,7 @@ import {
   ReactNode,
 } from "react";
 import { AppBskyActorDefs } from "@atproto/api";
-import { useAuth } from "./useAuth";
+import { useAuth } from "./hooks/useAuth";
 
 type Profile = AppBskyActorDefs.ProfileViewDetailed;
 

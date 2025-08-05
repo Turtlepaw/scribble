@@ -1,6 +1,6 @@
 "use client";
 import { useBoardsStore } from "@/lib/stores/boards";
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { $Typed } from "@atproto/api";
 import { AppBskyEmbedImages } from "@atproto/api/dist/client";
 import { LoaderCircle } from "lucide-react";

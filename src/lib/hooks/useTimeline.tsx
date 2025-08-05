@@ -1,7 +1,7 @@
 // lib/hooks/useFetchTimeline.ts
 import { useEffect, useRef, useCallback, Ref } from "react";
 import { AppBskyEmbedImages, AtUri } from "@atproto/api";
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { useFeedStore } from "../stores/feeds";
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 

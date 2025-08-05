@@ -1,4 +1,4 @@
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "./ui/button";
 import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { useState } from "react";

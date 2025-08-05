@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ModeToggle } from "./ModeToggle"; // for dark mode toggle
 import { LoaderCircle, Menu, X } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/lib/hooks/useAuth";
 import {
   Dialog,
   DialogContent,
