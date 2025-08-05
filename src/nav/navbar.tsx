@@ -73,8 +73,6 @@ export function Navbar() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
                 {/* <DropdownMenuItem>Profile</DropdownMenuItem> */}
                 <Link href={"/boards"}>
                   <DropdownMenuItem className="cursor-pointer">

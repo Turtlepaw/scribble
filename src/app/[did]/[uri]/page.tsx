@@ -4,6 +4,7 @@ import { SaveButton } from "@/components/SaveButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/useAuth";
+import { paramAsString } from "@/lib/utils/params";
 import { $Typed, AtUri } from "@atproto/api";
 import { AppBskyEmbedImages, AppBskyFeedPost } from "@atproto/api/dist/client";
 import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
@@ -14,20 +15,11 @@ import {
   LoaderCircle,
   MessagesSquare,
   Repeat,
-  Repeat2,
 } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import Image, { ImageProps } from "next/image";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { use, useEffect, useMemo, useRef, useState } from "react";
-
-export function paramAsString(str: string | string[]): string {
-  if (Array.isArray(str)) {
-    return str[0];
-  }
-  return str;
-}
+import { useEffect, useState } from "react";
 
 export const runtime = "edge";
 

@@ -1,30 +1,12 @@
 "use client";
-import { paramAsString } from "@/app/[did]/[uri]/page";
-import LikeCounter from "@/components/LikeCounter";
-import { SaveButton } from "@/components/SaveButton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { LIST_COLLECTION } from "@/constants";
-import { Board, useBoardsStore } from "@/lib/stores/boards";
+import { useBoardsStore } from "@/lib/stores/boards";
 import { useAuth } from "@/lib/useAuth";
-import { $Typed, AtUri } from "@atproto/api";
-import { AppBskyEmbedImages, AppBskyFeedPost } from "@atproto/api/dist/client";
-import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
-import clsx from "clsx";
-import {
-  ExternalLink,
-  Heart,
-  LoaderCircle,
-  MessagesSquare,
-  Repeat,
-  Repeat2,
-} from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { $Typed } from "@atproto/api";
+import { AppBskyEmbedImages } from "@atproto/api/dist/client";
+import { LoaderCircle } from "lucide-react";
 import Image, { ImageProps } from "next/image";
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
-import { use, useEffect, useMemo, useRef, useState } from "react";
-import z from "zod";
+import { motion } from "motion/react";
 
 export const runtime = "edge";
 
@@ -56,12 +38,18 @@ export default function BoardsPage() {
         <div className="inline-block">
           {Array.from(boards.entries()).map(([key, it]) => (
             <Link href={`/board/${agent?.did ?? "unknown"}/${key}`} key={key}>
-              <div className="bg-black/10 dark:bg-white/40 p-4 rounded-lg m-2 hover:bg-black/15 dark:hover:bg-white/60 min-w-lg min-h-2/5 transition-colors">
+              <motion.div
+                initial={{ opacity: 0, y: 2 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-black/10 dark:bg-white/3 p-4 rounded-lg m-2 hover:bg-black/15 dark:hover:bg-white/5 min-w-lg min-h-2/5 transition-colors"
+              >
                 <h2 className="font-medium text-lg">{it.name}</h2>
                 <p className="text-sm text-black/80 dark:text-white/80">
                   {truncateString(it.description, 50)}
                 </p>
-              </div>
+              </motion.div>
             </Link>
           ))}
         </div>

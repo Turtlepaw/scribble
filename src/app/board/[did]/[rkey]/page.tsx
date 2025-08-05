@@ -1,5 +1,4 @@
 "use client";
-import { paramAsString } from "@/app/[did]/[uri]/page";
 import { Feed } from "@/components/Feed";
 import { LoaderCircle } from "lucide-react";
 import { useBoardItemsStore } from "@/lib/stores/boardItems";
@@ -11,6 +10,7 @@ import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { EditButton } from "@/components/EditButton";
+import { paramAsString } from "@/lib/utils/params";
 
 export const runtime = "edge";
 
