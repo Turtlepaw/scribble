@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { motion } from "motion/react";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -35,12 +36,19 @@ export function Navbar() {
   return (
     <header className="border-b border-border bg-background/90 backdrop-blur-[200px] sticky top-0 z-50">
       <div className="flex items-center justify-between h-16 px-5">
-        <Link
-          href="/"
-          className="text-xl font-bold hover:text-black/70 dark:hover:text-white/70 transition-colors"
+        <motion.div
+          initial={{ opacity: 0, y: 2 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          whileTap={{ scale: 0.98 }}
         >
-          pin.to.it
-        </Link>
+          <Link
+            href="/"
+            className="text-xl font-bold hover:text-black/70 dark:hover:text-white/70 transition-colors"
+          >
+            pin.to.it
+          </Link>
+        </motion.div>
 
         <nav className="hidden md:flex gap-4">
           {/* <Link href="/explore" className="hover:underline">

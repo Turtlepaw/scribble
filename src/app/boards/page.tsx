@@ -34,32 +34,30 @@ export default function BoardsPage() {
     );
 
   return (
-    <div className="py-4 px-4 sm:py-8 sm:px-6 lg:px-8 flex items-center justify-center">
-      {/* Container that adapts to image width */}
-      <div className="w-full max-w-4xl flex justify-center">
-        <div className="inline-block">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            {Array.from(boards.entries()).map(([key, it]) => (
-              <Link
-                href={`/board/${agent?.did ?? "unknown"}/${key}`}
-                key={key}
-                className="h-full"
+    <div className="py-4 px-4 flex items-center justify-center">
+      <div className="w-full max-w-4xl">
+        <h1 className="font-medium text-lg mb-4">My Boards</h1>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          {Array.from(boards.entries()).map(([key, it]) => (
+            <Link
+              href={`/board/${agent?.did ?? "unknown"}/${key}`}
+              key={key}
+              className="h-full"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 2 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                whileTap={{ scale: 0.95 }}
+                className="flex flex-col h-full bg-black/10 dark:bg-white/3 p-4 rounded-lg hover:bg-black/15 dark:hover:bg-white/5 transition-colors"
               >
-                <motion.div
-                  initial={{ opacity: 0, y: 2 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex flex-col h-full bg-black/10 dark:bg-white/3 p-4 rounded-lg hover:bg-black/15 dark:hover:bg-white/5 transition-colors"
-                >
-                  <h2 className="font-medium text-lg">{it.name}</h2>
-                  <p className="text-sm text-black/80 dark:text-white/80 mt-1 line-clamp-2">
-                    {it.description}
-                  </p>
-                </motion.div>
-              </Link>
-            ))}
-          </div>
+                <h2 className="font-medium text-lg">{it.name}</h2>
+                <p className="text-sm text-black/80 dark:text-white/80 mt-1 line-clamp-2">
+                  {it.description}
+                </p>
+              </motion.div>
+            </Link>
+          ))}
         </div>
       </div>
     </div>
