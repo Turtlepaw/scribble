@@ -13,6 +13,7 @@ export type Board = z.infer<typeof Board>;
 type FeedDefsState = {
   boards: Map<string, Board>;
   setBoard: (rkey: string, board: Board) => void;
+  removeBoard: (rkey: string) => void;
   isLoading: boolean;
   setLoading: (value: boolean) => void;
 };
@@ -25,6 +26,14 @@ export const useBoardsStore = create<FeedDefsState>()(
         set((state) => ({
           boards: new Map(state.boards).set(rkey, board),
         })),
+      removeBoard: (rkey) =>
+        set((state) => {
+          const newMap = new Map(state.boards);
+          newMap.delete(rkey);
+          return {
+            boards: newMap,
+          };
+        }),
       isLoading: true,
       setLoading(value) {
         set(() => ({

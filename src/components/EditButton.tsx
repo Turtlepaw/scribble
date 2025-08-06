@@ -22,6 +22,7 @@ import { BoardItem, useBoardItemsStore } from "@/lib/stores/boardItems";
 import clsx from "clsx";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { DeleteButton } from "./DeleteButton";
 
 export function EditButton({
   board,
@@ -76,7 +77,8 @@ export function EditButton({
             />
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="justify-between flex w-full">
+          <DeleteButton board={board} rkey={rkey} />
           <Button
             onClick={async (e) => {
               e.stopPropagation(); // Optional, but safe
