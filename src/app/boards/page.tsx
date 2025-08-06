@@ -7,6 +7,8 @@ import { LoaderCircle } from "lucide-react";
 import Image, { ImageProps } from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
+import Masonry from "react-masonry-css";
+import { breakpointColumnsObj } from "@/components/Feed";
 
 export const runtime = "edge";
 
@@ -36,22 +38,28 @@ export default function BoardsPage() {
       {/* Container that adapts to image width */}
       <div className="w-full max-w-4xl flex justify-center">
         <div className="inline-block">
-          {Array.from(boards.entries()).map(([key, it]) => (
-            <Link href={`/board/${agent?.did ?? "unknown"}/${key}`} key={key}>
-              <motion.div
-                initial={{ opacity: 0, y: 2 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-black/10 dark:bg-white/3 p-4 rounded-lg m-2 hover:bg-black/15 dark:hover:bg-white/5 min-w-lg min-h-2/5 transition-colors"
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            {Array.from(boards.entries()).map(([key, it]) => (
+              <Link
+                href={`/board/${agent?.did ?? "unknown"}/${key}`}
+                key={key}
+                className="h-full"
               >
-                <h2 className="font-medium text-lg">{it.name}</h2>
-                <p className="text-sm text-black/80 dark:text-white/80">
-                  {truncateString(it.description, 50)}
-                </p>
-              </motion.div>
-            </Link>
-          ))}
+                <motion.div
+                  initial={{ opacity: 0, y: 2 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex flex-col h-full bg-black/10 dark:bg-white/3 p-4 rounded-lg hover:bg-black/15 dark:hover:bg-white/5 transition-colors"
+                >
+                  <h2 className="font-medium text-lg">{it.name}</h2>
+                  <p className="text-sm text-black/80 dark:text-white/80 mt-1 line-clamp-2">
+                    {it.description}
+                  </p>
+                </motion.div>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>

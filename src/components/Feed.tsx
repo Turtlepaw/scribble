@@ -174,20 +174,20 @@ export function feedAsMap(feed: PostView[]) {
   return map;
 }
 
+export const breakpointColumnsObj = {
+  default: 5,
+  1536: 4,
+  1280: 3,
+  1024: 2,
+  768: 1,
+};
+
 export function Feed({
   feed,
   isLoading = false,
   showUnsaveButton = false,
   onUnsave,
 }: FeedProps) {
-  const breakpointColumnsObj = {
-    default: 5,
-    1536: 4,
-    1280: 3,
-    1024: 2,
-    768: 1,
-  };
-
   return (
     <>
       <Masonry

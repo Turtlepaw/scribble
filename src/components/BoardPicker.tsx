@@ -19,6 +19,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Board } from "@/lib/stores/boards";
+import clsx from "clsx";
 
 export function BoardsPicker({
   boards,
@@ -47,7 +48,10 @@ export function BoardsPicker({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className={clsx(
+            "w-full justify-between",
+            selectedBoard ? "dark:text-white text-black" : ""
+          )}
         >
           {selectedBoard ? selectedBoard.name : "Select board..."}
           <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
