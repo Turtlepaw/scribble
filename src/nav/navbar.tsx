@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "./ModeToggle"; // for dark mode toggle
-import { LoaderCircle, Menu, X } from "lucide-react";
+import { Github, LoaderCircle, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import {
@@ -63,6 +63,11 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <Link target="_blank" href={"https://github.com/Turtlepaw/scribble/"}>
+            <Button variant="ghost" size="icon" className="cursor-pointer">
+              <Github />
+            </Button>
+          </Link>
           <ModeToggle />
           {session ? (
             <DropdownMenu>
