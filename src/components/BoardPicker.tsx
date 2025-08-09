@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/popover";
 import { Board } from "@/lib/stores/boards";
 import clsx from "clsx";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export function BoardsPicker({
   boards,
@@ -29,17 +30,29 @@ export function BoardsPicker({
 }: {
   selected: string;
   onSelected: (value: string) => unknown;
-  boards: Map<string, Board>;
+  boards: Record<
+    string,
+    Record<
+      string,
+      {
+        name: string;
+        description: string;
+      }
+    >
+  >;
   onCreateBoard: (name: string) => void; // New prop
 }) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
+  const { agent } = useAuth();
 
-  const entries = Array.from(boards.entries()).filter(([_, board]) =>
-    board.name.toLowerCase().includes(search.toLowerCase())
+  if (!agent) return <div>Not logged in :(</div>;
+
+  const entries = Array.from(Object.entries(boards[agent?.assertDid])).filter(
+    ([_, board]) => board.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const selectedBoard = boards.get(value);
+  const selectedBoard = boards[agent?.assertDid]?.[value];
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

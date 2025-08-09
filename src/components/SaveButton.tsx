@@ -69,7 +69,7 @@ export function SaveButton({ post, image }: { post: PostView; image: number }) {
                   toast("Board created");
 
                   const rkey = new AtUri(result.data.uri).rkey;
-                  boardsStore.setBoard(rkey, record);
+                  boardsStore.setBoard(agent.assertDid, rkey, record);
                   setSelectedBoard(rkey);
                 } else {
                   toast("Failed to create board");
