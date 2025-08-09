@@ -10,6 +10,7 @@ import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { SaveButton } from "./SaveButton";
 import { UnsaveButton } from "./UnsaveButton";
 import { LikeButton } from "./LikeButton";
+import { useState } from "react";
 
 export type FeedItem = {
   id: string;
@@ -62,6 +63,7 @@ function ImageCard({
   index: number;
 }) {
   const image = getImageFromItem(item, index);
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
 
   if (!image) return;
 
@@ -69,14 +71,20 @@ function ImageCard({
   const txt = getText(item);
 
   return (
-    <div className="relative group">
+    <div className={`relative group ${isDropdownOpen ? "hover-active" : ""}`}>
       {/* Save/Unsave button – top-left */}
-      <div className="absolute top-3 left-3 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
-        {ActionButton && <ActionButton image={index} post={item} />}
+      <div className="absolute top-3 left-3 z-30 opacity-0 group-hover:opacity-100 group-[.hover-active]:opacity-100 transition-opacity">
+        {ActionButton && (
+          <ActionButton
+            image={index}
+            post={item}
+            onDropdownOpenChange={setDropdownOpen}
+          />
+        )}
       </div>
 
       {/* Like button – top-right */}
-      <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 group-[.hover-active]:opacity-100 transition-opacity">
         <LikeButton post={item} />
       </div>
 
@@ -117,7 +125,7 @@ function ImageCard({
 
           {/* Author info */}
           {item.author && (
-            <div className="absolute inset-0 z-20 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
+            <div className="absolute inset-0 z-20 bg-black/40 text-white opacity-0 group-hover:opacity-100 group-[.hover-active]:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
               <div className="w-fit self-start" />
 
               <div className="flex flex-col gap-2">

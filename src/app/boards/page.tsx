@@ -48,7 +48,7 @@ export default function BoardsPage() {
               className="h-full"
             >
               <motion.div
-                initial={{ opacity: 0, y: 2, filter: "blur(4px)" }}
+                initial={{ opacity: 0, y: 2, filter: "blur(14px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 whileTap={{ scale: 0.95 }}
