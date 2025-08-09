@@ -97,9 +97,11 @@ export function DeleteButton({ board, rkey }: { board: Board; rkey: string }) {
                     LIST_COLLECTION,
                     rkey
                   );
-                  const items = boardItems
-                    .entries()
-                    .filter((e) => AtUri.make(e[1].list).rkey == listUri.rkey);
+                  const items = Array.from(
+                    boardItems
+                      .entries()
+                      .filter((e) => AtUri.make(e[1].list).rkey == listUri.rkey)
+                  );
 
                   setTotalItems(items.length + 1); // +1 for the board itself
                   setProgress(0);

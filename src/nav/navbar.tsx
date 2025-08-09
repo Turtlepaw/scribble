@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "./ModeToggle"; // for dark mode toggle
-import { Github, LoaderCircle, Menu, X } from "lucide-react";
+import { Code, Github, LoaderCircle, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import {
@@ -27,6 +27,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "motion/react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -63,10 +68,22 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link target="_blank" href={"https://github.com/Turtlepaw/scribble/"}>
-            <Button variant="ghost" size="icon" className="cursor-pointer">
-              <Github />
-            </Button>
+          <Link
+            target="_blank"
+            href={
+              "https://tangled.sh/@did:plc:u2grpouz5553mrn4x772pyfa/pin.to.it/"
+            }
+          >
+            <Tooltip>
+              <TooltipTrigger>
+                <Button variant="ghost" size="icon" className="cursor-pointer">
+                  <Code />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Source code</p>
+              </TooltipContent>
+            </Tooltip>
           </Link>
           <ModeToggle />
           {session ? (
