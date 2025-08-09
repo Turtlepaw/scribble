@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }, // loopback client
           })
         : await BrowserOAuthClient.load({
-            handleResolver,
+            handleResolver: "https://bsky.social",
             clientId: "https://pin.to.it/client-metadata.json",
           });
 
