@@ -17,8 +17,11 @@ function truncateString(str: string, num: number) {
 }
 
 export default function BoardsPage() {
-  const { boards, isLoading } = useBoardsStore();
+  const { boards, isLoading, getBoards } = useBoardsStore();
   const { agent } = useAuth();
+
+  if (!agent) return <div>Not logged in</div>;
+  const boardsFromDid = getBoards(agent.assertDid);
 
   if (isLoading)
     return (
@@ -26,7 +29,7 @@ export default function BoardsPage() {
         <LoaderCircle className="animate-spin text-black/70 dark:text-white/70 w-8 h-8" />
       </div>
     );
-  if (boards.size <= 0)
+  if (!boardsFromDid || Object.entries(boardsFromDid).length <= 0)
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <p className="text-black/70 dark:text-white/70">No boards found</p>
@@ -38,15 +41,15 @@ export default function BoardsPage() {
       <div className="w-full max-w-4xl">
         <h1 className="font-medium text-lg mb-4">My Boards</h1>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          {Array.from(boards.entries()).map(([key, it]) => (
+          {Array.from(Object.entries(boardsFromDid)).map(([key, it]) => (
             <Link
               href={`/board/${agent?.did ?? "unknown"}/${key}`}
               key={key}
               className="h-full"
             >
               <motion.div
-                initial={{ opacity: 0, y: 2 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 2, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 whileTap={{ scale: 0.95 }}
                 className="flex flex-col h-full bg-black/10 dark:bg-white/3 p-4 rounded-lg hover:bg-black/15 dark:hover:bg-white/5 transition-colors"

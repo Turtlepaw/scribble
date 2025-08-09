@@ -115,7 +115,7 @@ export function EditButton({
                   newRecord.success &&
                   newRecordData.success
                 ) {
-                  setBoard(rkey, newRecordData.data);
+                  setBoard(agent.assertDid, rkey, newRecordData.data);
                   toast("Board updated");
                   setOpen(false);
                 } else {

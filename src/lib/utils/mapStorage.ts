@@ -21,7 +21,6 @@ export function createMapStorage<T>(
       const mapValue = newValue.state?.[key];
       const serializedMap =
         mapValue instanceof Map ? Array.from(mapValue.entries()) : [];
-
       const str = JSON.stringify({
         ...newValue,
         state: {
@@ -31,7 +30,6 @@ export function createMapStorage<T>(
       });
       localStorage.setItem(name, str);
     },
-
     removeItem: (name) => localStorage.removeItem(name),
   };
 }

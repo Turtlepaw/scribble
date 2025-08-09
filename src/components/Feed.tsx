@@ -1,16 +1,8 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuth } from "@/lib/hooks/useAuth";
-import {
-  AppBskyEmbedImages,
-  AppBskyFeedDefs,
-  AppBskyFeedPost,
-  AtUri,
-} from "@atproto/api";
+import { AppBskyEmbedImages, AppBskyFeedPost, AtUri } from "@atproto/api";
 import { LoaderCircle } from "lucide-react";
-import { useEffect, useRef, useState, useCallback } from "react";
 import { motion } from "motion/react";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import Masonry from "react-masonry-css";
@@ -44,7 +36,6 @@ interface FeedProps {
 
   isLoading?: boolean;
   showUnsaveButton?: boolean;
-  onUnsave?: (imageUrl: string, index: number) => void;
 }
 
 function getText(post: PostView) {
@@ -64,12 +55,10 @@ function getImageFromItem(it: PostView, index: number) {
 function ImageCard({
   item,
   showUnsaveButton,
-  onUnsave,
   index,
 }: {
   item: PostView;
   showUnsaveButton?: boolean;
-  onUnsave?: (imageUrl: string, index: number) => void;
   index: number;
 }) {
   const image = getImageFromItem(item, index);
@@ -80,7 +69,7 @@ function ImageCard({
   const txt = getText(item);
 
   return (
-    <div key={item.uri} className="relative group">
+    <div className="relative group">
       {/* Save/Unsave button – top-left */}
       <div className="absolute top-3 left-3 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
         {ActionButton && <ActionButton image={index} post={item} />}
@@ -186,7 +175,6 @@ export function Feed({
   feed,
   isLoading = false,
   showUnsaveButton = false,
-  onUnsave,
 }: FeedProps) {
   return (
     <>
@@ -197,11 +185,10 @@ export function Feed({
       >
         {feed?.map(([index, item]) => (
           <ImageCard
-            key={item.uri}
+            key={`${item.uri}-${index}`}
             item={item}
             index={index}
             showUnsaveButton={showUnsaveButton}
-            onUnsave={onUnsave}
           />
         ))}
       </Masonry>

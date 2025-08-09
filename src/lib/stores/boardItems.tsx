@@ -7,7 +7,7 @@ export const BoardItem = z.object({
   url: z.string(),
   list: z.string(),
   $type: z.string(),
-  createdAt: z.string(),
+  createdAt: z.string().optional(),
 });
 
 export type BoardItem = z.infer<typeof BoardItem>;

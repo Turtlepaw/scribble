@@ -23,6 +23,7 @@ import { BoardItem, useBoardItemsStore } from "@/lib/stores/boardItems";
 import clsx from "clsx";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { Progress } from "./ui/progress";
 
 export function DeleteButton({ board, rkey }: { board: Board; rkey: string }) {
   const { agent } = useAuth();
@@ -32,6 +33,8 @@ export function DeleteButton({ board, rkey }: { board: Board; rkey: string }) {
   const [description, setDescription] = useState(board.description);
   const { setBoard, removeBoard } = useBoardsStore();
   const { boardItems } = useBoardItemsStore();
+  const [progress, setProgress] = useState(0);
+  const [totalItems, setTotalItems] = useState(0);
 
   if (agent == null) return <div>not logged in :(</div>;
   return (
@@ -63,65 +66,91 @@ export function DeleteButton({ board, rkey }: { board: Board; rkey: string }) {
             Looked like it was a pretty good board you had going there.
           </DialogDescription>
         </DialogHeader>
+
+        {isLoading && (
+          <div className="space-y-2 my-4">
+            <div className="text-sm text-muted-foreground">
+              Deleting items... ({progress}/{totalItems})
+            </div>
+            <Progress value={(progress / Math.max(totalItems, 1)) * 100} />
+          </div>
+        )}
+
         <DialogFooter>
-          <DialogClose>
-            <Button className="cursor-pointer" variant={"secondary"}>
-              Cancel
-            </Button>
-          </DialogClose>
-          <Button
-            onClick={async (e) => {
-              e.stopPropagation(); // Optional, but safe
+          {!isLoading && (
+            <DialogClose>
+              <Button className="cursor-pointer" variant={"secondary"}>
+                Cancel
+              </Button>
+            </DialogClose>
+          )}
 
-              setLoading(true);
-              try {
-                const listUri = AtUri.make(
-                  agent.assertDid,
-                  LIST_COLLECTION,
-                  rkey
-                );
-                const items = boardItems
-                  .entries()
-                  .filter((e) => AtUri.make(e[1].list).rkey == listUri.rkey);
+          {!isLoading ? (
+            <Button
+              onClick={async (e) => {
+                e.stopPropagation();
 
-                for (const item of items) {
-                  const itemDeleteRes =
+                setLoading(true);
+                try {
+                  const listUri = AtUri.make(
+                    agent.assertDid,
+                    LIST_COLLECTION,
+                    rkey
+                  );
+                  const items = boardItems
+                    .entries()
+                    .filter((e) => AtUri.make(e[1].list).rkey == listUri.rkey);
+
+                  setTotalItems(items.length + 1); // +1 for the board itself
+                  setProgress(0);
+
+                  for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    const itemDeleteRes =
+                      await agent.com.atproto.repo.deleteRecord({
+                        repo: agent.assertDid,
+                        collection: LIST_ITEM_COLLECTION,
+                        rkey: item[0],
+                      });
+
+                    if (!itemDeleteRes.success) {
+                      toast(`Failed to delete ${item[0]}`);
+                    }
+
+                    setProgress(i + 1);
+                  }
+
+                  const listDeleteRes =
                     await agent.com.atproto.repo.deleteRecord({
                       repo: agent.assertDid,
-                      collection: LIST_ITEM_COLLECTION,
-                      rkey: item[0],
+                      collection: LIST_COLLECTION,
+                      rkey: rkey,
                     });
 
-                  if (!itemDeleteRes.success) {
-                    toast(`Failed to delete ${item[0]}`);
-                  }
-                }
+                  setProgress(totalItems);
 
-                const listDeleteRes = await agent.com.atproto.repo.deleteRecord(
-                  {
-                    repo: agent.assertDid,
-                    collection: LIST_COLLECTION,
-                    rkey: rkey,
+                  if (listDeleteRes.success) {
+                    removeBoard(agent.assertDid, rkey);
+                    toast("Board deleted");
+                    setOpen(false);
+                  } else {
+                    toast("Failed to delete board");
                   }
-                );
-
-                if (listDeleteRes.success) {
-                  removeBoard(rkey);
-                  toast("Board deleted");
-                  setOpen(false);
-                } else {
-                  toast("Failed to delete board");
+                } finally {
+                  setLoading(false);
                 }
-              } finally {
-                setLoading(false);
-              }
-            }}
-            disabled={name.length <= 0}
-            className="cursor-pointer"
-          >
-            {isLoading && <LoaderCircle className="animate-spin ml-2" />}
-            Confirm
-          </Button>
+              }}
+              disabled={name.length <= 0}
+              className="cursor-pointer"
+            >
+              Confirm
+            </Button>
+          ) : (
+            <Button disabled className="cursor-not-allowed">
+              <LoaderCircle className="animate-spin mr-2" />
+              Deleting...
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

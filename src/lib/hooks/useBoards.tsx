@@ -6,26 +6,43 @@ import { AtUri } from "@atproto/api";
 import { Board, useBoardsStore } from "../stores/boards";
 import { LIST_COLLECTION } from "@/constants";
 import { useBoardItems } from "./useBoardItems";
+import { Agent } from "http";
+import { getPdsAgent } from "../utils/pds";
+import { useDidStore } from "../stores/did";
 
-export function useBoards() {
+export function useBoards(did?: string | null) {
   const { agent } = useAuth();
   const store = useBoardsStore();
-  const [isLoading, setLoading] = useState(store.boards.size == 0);
+  const didStore = useDidStore();
+  const [isLoading, setLoading] = useState(
+    Object.entries(store.boards).length == 0
+  );
 
   useEffect(() => {
     if (agent == null) return;
     const loadBoards = async () => {
       try {
-        const boards = await agent.com.atproto.repo.listRecords({
+        console.log(
+          `Loading board items for ${did ?? agent.assertDid} (raw: ${did})`
+        );
+
+        const resolvedDid = did ?? agent.assertDid;
+        const tempAgent = await getPdsAgent(resolvedDid, didStore, agent);
+
+        const boards = await tempAgent.com.atproto.repo.listRecords({
           collection: LIST_COLLECTION,
-          repo: agent.assertDid,
+          repo: did ?? agent.assertDid,
           limit: 100,
         });
 
         for (const board of boards.data.records) {
           const safeBoard = Board.safeParse(board.value);
           if (safeBoard.success)
-            store.setBoard(new AtUri(board.uri).rkey, safeBoard.data);
+            store.setBoard(
+              resolvedDid,
+              new AtUri(board.uri).rkey,
+              safeBoard.data
+            );
         }
       } finally {
         setLoading(false);
@@ -33,7 +50,7 @@ export function useBoards() {
       }
     };
     loadBoards();
-  }, [agent]);
+  }, [agent, did]);
 
   return { isLoading };
 }
