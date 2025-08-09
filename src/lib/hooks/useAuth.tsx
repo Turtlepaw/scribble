@@ -14,6 +14,7 @@ import {
   type OAuthSession,
 } from "@atproto/oauth-client-browser";
 import { Agent } from "@atproto/api";
+import { th } from "zod/v4/locales";
 
 type AuthContextType = {
   session: OAuthSession | null;
@@ -34,13 +35,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initClient = async () => {
       const isDev = process.env.NODE_ENV === "development";
-      const handleResolver = new AtprotoDohHandleResolver({
-        dohEndpoint: "https://dns.google/resolve",
-      });
 
       const c = isDev
         ? new BrowserOAuthClient({
-            handleResolver,
+            handleResolver: "https://bsky.social",
             clientMetadata: {
               client_name: "Statusphere React App",
               client_id: `http://localhost?scope=${encodeURI(
@@ -109,6 +107,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } catch (e) {
         console.warn("Login aborted or failed", e);
+        throw new Error(
+          `Login failed: ${e instanceof Error ? e.message : "Unknown error"}`
+        );
       }
     },
     [client]
@@ -119,6 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       client.revoke(session.sub);
       setSession(null);
       setAgent(null);
+      // refresh page
+      window.location.reload();
     }
   }, [client, session]);
 

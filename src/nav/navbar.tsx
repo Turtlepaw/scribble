@@ -144,6 +144,7 @@ function LoginButton() {
   const { login } = useAuth();
   const [handle, setHandle] = useState("");
   const [isLoading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   return (
     <Dialog>
       <DialogTrigger>
@@ -163,11 +164,20 @@ function LoginButton() {
             />
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="justify-between flex w-full">
+          {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
           <Button
-            onClick={() => {
+            onClick={async () => {
               setLoading(true);
-              login(handle);
+              try {
+                await login(handle);
+              } catch (e) {
+                setError(
+                  e instanceof Error ? e.message : "Unknown error occurred"
+                );
+              } finally {
+                setLoading(false);
+              }
             }}
             disabled={!handle}
             className="cursor-pointer"
