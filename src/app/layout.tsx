@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/hooks/useAuth";
 import { ProfileProvider } from "@/lib/useProfile";
 import { Toaster } from "sonner";
 import { BoardsProvider } from "@/lib/hooks/useBoards";
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,7 +23,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "pin.to.it",
-  description: "Simple scrapboard client",
+  description: "Simple scrapboard.org client",
 };
 
 export default function RootLayout({
@@ -38,6 +39,7 @@ export default function RootLayout({
           <AuthProvider>
             <ProfileProvider>
               <BoardsProvider>
+                <ServiceWorkerRegistration />
                 <div className="min-h-screen flex flex-col">
                   <Navbar />
                   <main className="flex-1 py-6">{children}</main>

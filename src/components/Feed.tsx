@@ -10,7 +10,7 @@ import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { SaveButton } from "./SaveButton";
 import { UnsaveButton } from "./UnsaveButton";
 import { LikeButton } from "./LikeButton";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export type FeedItem = {
   id: string;
@@ -51,6 +51,26 @@ function getImageFromItem(it: PostView, index: number) {
   ) {
     return it.embed.images[index];
   } else return null;
+}
+
+// Add this function to prefetch and cache images
+function prefetchAndCacheImages(feed: [number, PostView][] | undefined) {
+  if (!feed || typeof window === "undefined") return;
+
+  feed.forEach(([index, item]) => {
+    const image = getImageFromItem(item, index);
+    if (image && image.fullsize) {
+      const img = new window.Image();
+      img.src = image.fullsize;
+
+      // If service worker is active, explicitly add to cache
+      if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+        fetch(image.fullsize, { mode: "no-cors" }).catch((err) =>
+          console.warn("Error prefetching image:", err)
+        );
+      }
+    }
+  });
 }
 
 function ImageCard({
@@ -184,6 +204,11 @@ export function Feed({
   isLoading = false,
   showUnsaveButton = false,
 }: FeedProps) {
+  // Use effect to prefetch and cache images when feed changes
+  useEffect(() => {
+    prefetchAndCacheImages(feed);
+  }, [feed]);
+
   return (
     <>
       <Masonry
