@@ -159,6 +159,22 @@ function LoginButton() {
             <Input
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && handle && !isLoading) {
+                  setLoading(true);
+                  login(handle)
+                    .catch((e) => {
+                      setError(
+                        e instanceof Error
+                          ? e.message
+                          : "Unknown error occurred"
+                      );
+                    })
+                    .finally(() => {
+                      setLoading(false);
+                    });
+                }
+              }}
               placeholder="example.bsky.social"
               className="dark:text-white text-black"
             />
