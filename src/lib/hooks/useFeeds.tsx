@@ -3,6 +3,9 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { useFeedDefsStore } from "../stores/feedDefs";
 import { AtUri } from "@atproto/api";
 
+// How long the cache stays fresh (30 minutes by default)
+const CACHE_DURATION = 30 * 60 * 1000;
+
 export function useFeeds() {
   const { agent } = useAuth();
   const store = useFeedDefsStore();
@@ -10,7 +13,28 @@ export function useFeeds() {
 
   useEffect(() => {
     if (agent == null) return;
+
+    // Use cached data immediately if available
+    if (store.feeds != null) {
+      setLoading(false);
+    }
+
+    // Check if we need to refresh the data
+    const lastFetchedAt = localStorage.getItem("feedsLastFetchedAt");
+    const now = Date.now();
+    const isStale =
+      !lastFetchedAt || now - parseInt(lastFetchedAt) > CACHE_DURATION;
+
+    // Skip fetching if data is fresh
+    if (!isStale && store.feeds != null) return;
+
     const loadFeeds = async () => {
+      // Only show loading state if we have no cached data
+      const isBackgroundRefresh = store.feeds != null;
+      if (!isBackgroundRefresh) {
+        setLoading(true);
+      }
+
       try {
         const prefs = await agent.getPreferences();
         if (prefs?.savedFeeds == null) return;
@@ -19,13 +43,11 @@ export function useFeeds() {
           if (!feed.value.startsWith("at")) continue;
           const urip = AtUri.make(feed.value);
 
-          console.log("host", urip.host);
           if (!urip.host.startsWith("did:")) {
             const res = await agent.resolveHandle({ handle: urip.host });
             urip.host = res.data.did;
           }
 
-          console.log("Fetching feed defs", feed);
           if (feed.type == "feed") {
             const feedDef = await agent.app.bsky.feed.getFeedGenerators({
               feeds: [urip.toString()],
@@ -42,10 +64,14 @@ export function useFeeds() {
             });
           }
         }
+
+        // Update the last fetched timestamp
+        localStorage.setItem("feedsLastFetchedAt", now.toString());
       } finally {
         setLoading(false);
       }
     };
+
     loadFeeds();
   }, [agent]);
 

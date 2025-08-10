@@ -3,14 +3,13 @@
 import { Feed, feedAsMap } from "@/components/Feed";
 import { useFetchTimeline } from "@/lib/hooks/useTimeline";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useFeedStore } from "@/lib/stores/feeds";
 import { useFeeds } from "@/lib/hooks/useFeeds";
 import { LoaderCircle } from "lucide-react";
 import { useFeedDefsStore } from "@/lib/stores/feedDefs";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useBoards } from "@/lib/hooks/useBoards";
+import { InfiniteScrollWrapper } from "@/components/InfiniteScrollWrapper";
 
 export default function Home() {
   const { fetchFeed } = useFetchTimeline();
@@ -18,30 +17,17 @@ export default function Home() {
   const { isLoading } = useFeeds();
   const { feeds, defaultFeed, setDefaultFeed } = useFeedDefsStore();
   const { session, loading } = useAuth();
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const [feed, setFeed] = useState<"timeline" | string>(
     defaultFeed ?? "timeline"
   );
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          fetchFeed(feed);
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    const sentinel = sentinelRef.current;
-    if (sentinel) observer.observe(sentinel);
-    return () => {
-      if (sentinel) observer.unobserve(sentinel);
-    };
-  }, [fetchFeed, feed]);
+  const loadMore = async () => {
+    await fetchFeed(feed);
+  };
 
   useEffect(() => {
-    fetchFeed(feed);
+    console.log(`Loading feed: ${feed}`);
+    loadMore();
   }, [feed]);
 
   if (session == null) {
@@ -64,11 +50,19 @@ export default function Home() {
 
   const triggerClass =
     "shrink-0 cursor-pointer dark:hover:bg-white/5 hover:bg-black/5 transition-colors";
+
+  const currentFeedData =
+    feed === "timeline" ? feedStore.timeline : feedStore.customFeeds[feed];
+
+  const hasMore =
+    currentFeedData?.cursor !== null && currentFeedData?.cursor !== undefined;
+  const isLoadingMore = currentFeedData?.isLoading || false;
+
   return (
     <main className="px-5">
       <Tabs defaultValue={defaultFeed} className="w-full">
         <TabsList
-          className="overflow-x-auto w-full justify-start" //"flex w-full overflow-x-auto whitespace-nowrap no-scrollbar pl-10 pr-4 space-x-4"
+          className="overflow-x-auto w-full justify-start"
           style={{ justifyItems: "unset" }}
         >
           <TabsTrigger
@@ -97,25 +91,41 @@ export default function Home() {
         </TabsList>
 
         <TabsContent value="timeline">
-          <Feed
-            feed={feedAsMap(feedStore.timeline.posts.map((it) => it.post))}
-            isLoading={feedStore.timeline.isLoading}
-          />
+          <InfiniteScrollWrapper
+            hasMore={hasMore}
+            onLoadMore={loadMore}
+            isLoadingMore={isLoadingMore}
+          >
+            <Feed
+              feed={feedAsMap(feedStore.timeline.posts.map((it) => it.post))}
+              isLoading={
+                feedStore.timeline.isLoading &&
+                feedStore.timeline.posts.length === 0
+              }
+            />
+          </InfiniteScrollWrapper>
         </TabsContent>
 
         {Object.entries(feeds)
           .filter((it) => feedStore.customFeeds?.[it[0]] != null)
           .map(([value]) => (
             <TabsContent key={value} value={value}>
-              <Feed
-                feed={feedAsMap(feedStore.customFeeds[value].posts)}
-                isLoading={feedStore.customFeeds[value].isLoading}
-              />
+              <InfiniteScrollWrapper
+                hasMore={hasMore}
+                onLoadMore={loadMore}
+                isLoadingMore={isLoadingMore}
+              >
+                <Feed
+                  feed={feedAsMap(feedStore.customFeeds[value].posts)}
+                  isLoading={
+                    feedStore.customFeeds[value].isLoading &&
+                    feedStore.customFeeds[value].posts.length === 0
+                  }
+                />
+              </InfiniteScrollWrapper>
             </TabsContent>
           ))}
       </Tabs>
-
-      <div ref={sentinelRef} className="h-1" />
     </main>
   );
 }
