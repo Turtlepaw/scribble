@@ -10,6 +10,7 @@ import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { SaveButton } from "./SaveButton";
 import { UnsaveButton } from "./UnsaveButton";
 import { LikeButton } from "./LikeButton";
+import { ContentWarning } from "./ContentWarning";
 import { useState, useEffect } from "react";
 
 export type FeedItem = {
@@ -91,91 +92,95 @@ function ImageCard({
   const txt = getText(item);
 
   return (
-    <div className={`relative group ${isDropdownOpen ? "hover-active" : ""}`}>
-      {/* Save/Unsave button – top-left */}
-      <div className="absolute top-3 left-3 z-30 opacity-0 group-hover:opacity-100 group-[.hover-active]:opacity-100 transition-opacity">
-        {ActionButton && (
-          <ActionButton
-            image={index}
-            post={item}
-            onDropdownOpenChange={setDropdownOpen}
-          />
-        )}
-      </div>
+    <ContentWarning post={item}>
+      <div className={`relative group ${isDropdownOpen ? "hover-active" : ""}`}>
+        {/* Save/Unsave button – top-left */}
+        <div className="absolute top-3 left-3 z-30 opacity-0 group-hover:opacity-100 group-[.hover-active]:opacity-100 transition-opacity">
+          {ActionButton && (
+            <ActionButton
+              image={index}
+              post={item}
+              onDropdownOpenChange={setDropdownOpen}
+            />
+          )}
+        </div>
 
-      {/* Like button – top-right */}
-      <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 group-[.hover-active]:opacity-100 transition-opacity">
-        <LikeButton post={item} />
-      </div>
+        {/* Like button – top-right */}
+        <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 group-[.hover-active]:opacity-100 transition-opacity">
+          <LikeButton post={item} />
+        </div>
 
-      {/* Link wraps image only */}
-      <Link
-        href={`/${item.author.did}/${AtUri.make(item.uri).rkey}`}
-        className="block"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 5 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          whileTap={{ scale: 0.95 }}
-          className="group relative w-full min-h-[120px] min-w-[120px] overflow-hidden rounded-xl bg-gray-900"
+        {/* Link wraps image only */}
+        <Link
+          href={`/${item.author.did}/${AtUri.make(item.uri).rkey}`}
+          className="block"
         >
-          {/* Blurred background */}
-          <Image
-            src={image.fullsize}
-            alt=""
-            fill
-            placeholder={image.thumb ? "blur" : "empty"}
-            blurDataURL={image.thumb}
-            className="object-cover filter blur-xl scale-110 opacity-30"
-          />
-
-          {/* Foreground image */}
-          <div className="relative z-10 flex items-center justify-center w-full min-h-[120px]">
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            whileTap={{ scale: 0.95 }}
+            className="group relative w-full min-h-[120px] min-w-[120px] overflow-hidden rounded-xl bg-gray-900"
+          >
+            {/* Blurred background */}
             <Image
               src={image.fullsize}
-              alt={image.alt || ""}
+              alt=""
+              fill
               placeholder={image.thumb ? "blur" : "empty"}
               blurDataURL={image.thumb}
-              width={image.aspectRatio?.width ?? 400}
-              height={image.aspectRatio?.height ?? 400}
-              className="object-contain max-w-full max-h-full rounded-lg"
-              priority
+              className="object-cover filter blur-xl scale-110 opacity-30"
             />
-          </div>
 
-          {/* Author info */}
-          {item.author && (
-            <div className="absolute inset-0 z-20 bg-black/40 text-white opacity-0 group-hover:opacity-100 group-[.hover-active]:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
-              <div className="w-fit self-start" />
-
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <Avatar>
-                    <AvatarImage src={item.author.avatar} />
-                    <AvatarFallback>
-                      {item.author.displayName || item.author.handle}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col leading-tight">
-                    <span>{item.author.displayName || item.author.handle}</span>
-                    <span className="text-white/70 text-[0.75rem]">
-                      @{item.author.handle}
-                    </span>
-                  </div>
-                </div>
-
-                {txt && (
-                  <div className="text-sm">
-                    {txt.length > 100 ? txt.slice(0, 100) + "…" : txt}
-                  </div>
-                )}
-              </div>
+            {/* Foreground image */}
+            <div className="relative z-10 flex items-center justify-center w-full min-h-[120px]">
+              <Image
+                src={image.fullsize}
+                alt={image.alt || ""}
+                placeholder={image.thumb ? "blur" : "empty"}
+                blurDataURL={image.thumb}
+                width={image.aspectRatio?.width ?? 400}
+                height={image.aspectRatio?.height ?? 400}
+                className="object-contain max-w-full max-h-full rounded-lg"
+                priority
+              />
             </div>
-          )}
-        </motion.div>
-      </Link>
-    </div>
+
+            {/* Author info */}
+            {item.author && (
+              <div className="absolute inset-0 z-20 bg-black/40 text-white opacity-0 group-hover:opacity-100 group-[.hover-active]:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
+                <div className="w-fit self-start" />
+
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Avatar>
+                      <AvatarImage src={item.author.avatar} />
+                      <AvatarFallback>
+                        {item.author.displayName || item.author.handle}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col leading-tight">
+                      <span>
+                        {item.author.displayName || item.author.handle}
+                      </span>
+                      <span className="text-white/70 text-[0.75rem]">
+                        @{item.author.handle}
+                      </span>
+                    </div>
+                  </div>
+
+                  {txt && (
+                    <div className="text-sm">
+                      {txt.length > 100 ? txt.slice(0, 100) + "…" : txt}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </Link>
+      </div>
+    </ContentWarning>
   );
 }
 

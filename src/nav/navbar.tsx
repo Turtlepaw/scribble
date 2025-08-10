@@ -109,6 +109,12 @@ export function Navbar() {
                     My Boards
                   </DropdownMenuItem>
                 </Link>
+                <Link href={"/moderation"}>
+                  <DropdownMenuItem className="cursor-pointer">
+                    Content Settings
+                  </DropdownMenuItem>
+                </Link>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer" onClick={logout}>
                   Logout
                 </DropdownMenuItem>

@@ -71,6 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const ag = new Agent(result.session);
           setSession(result.session);
           setAgent(ag);
+          const prefs = await agent?.getPreferences();
+          if (!prefs) return;
         } else {
           const did = localStorage.getItem("did");
 
