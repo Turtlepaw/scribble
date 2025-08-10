@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import * as z from "zod";
 
-export const Board = z.object({
+export const Board = z.looseObject({
   name: z.string(),
   description: z.string(),
 });

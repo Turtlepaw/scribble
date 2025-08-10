@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 import * as z from "zod";
 import { createMapStorage } from "../utils/mapStorage";
 
-export const BoardItem = z.object({
+export const BoardItem = z.looseObject({
   url: z.string(),
   list: z.string(),
   $type: z.string(),
