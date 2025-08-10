@@ -31,7 +31,7 @@ export function EditButton({
 }: {
   board: Board;
   rkey: string;
-  className: string;
+  className?: string;
 }) {
   const { agent } = useAuth();
   const [isLoading, setLoading] = useState(false);

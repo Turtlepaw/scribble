@@ -1,13 +1,12 @@
 "use client";
 
 import { Feed } from "@/components/Feed";
-import { GitFork, LoaderCircle } from "lucide-react";
+import { Copy, GitFork, LoaderCircle, Share2 } from "lucide-react";
 import { BoardItem, useBoardItemsStore } from "@/lib/stores/boardItems";
 import { Board, useBoardsStore } from "@/lib/stores/boards";
 import { useCurrentBoard } from "@/lib/stores/useCurrentBoard";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { AtUri } from "@atproto/api";
-import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useCallback, useState } from "react";
 import { EditButton } from "@/components/EditButton";
@@ -24,6 +23,12 @@ import { getAllRecords } from "@/lib/records";
 import { getPdsAgent } from "@/lib/utils/pds";
 import { de } from "zod/v4/locales";
 import { useDidStore } from "@/lib/stores/did";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useActorProfile } from "@/lib/stores/actorProfiles";
+import {
+  ProfileView,
+  ProfileViewDetailed,
+} from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 
 export const runtime = "edge";
 
@@ -150,11 +155,15 @@ export default function BoardPage() {
       // Create list record
       const listRes = await agent.com.atproto.repo.createRecord({
         collection: LIST_COLLECTION,
-        record: board,
+        record: {
+          ...board,
+          source: boardUri.toString(),
+        },
         repo: agent.assertDid,
       });
 
       if (!listRes.success) {
+        toast.dismiss(); // Dismiss the forking toast
         toast("Failed to create list");
         return;
       }
@@ -209,6 +218,10 @@ export default function BoardPage() {
     }
   }, [agent, board, decodedDid, rkey, isForkingBoard, router]);
 
+  // Get author profile - now using our store
+  const { profile: authorProfile, isLoading: isAuthorLoading } =
+    useActorProfile(decodedDid);
+
   // Loading states
   if (!isValidParams) {
     return <ErrorState message="Invalid board parameters" />;
@@ -223,6 +236,7 @@ export default function BoardPage() {
   }
 
   const canEdit = agent?.did == decodedDid;
+  const canFork = !canEdit && agent?.did != null;
   const isLoading = isPostsLoading || isLoadingMore;
 
   return (
@@ -230,9 +244,12 @@ export default function BoardPage() {
       <BoardHeader
         board={board}
         canEdit={canEdit}
+        canFork={canFork}
         rkey={paramAsString(rkey)}
         onFork={handleForkBoard}
         isForkingBoard={isForkingBoard}
+        authorProfile={authorProfile}
+        isAuthorLoading={isAuthorLoading}
       />
       {error && (
         <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -274,16 +291,22 @@ function BoardHeader({
   canEdit,
   rkey,
   onFork,
+  canFork,
   isForkingBoard,
+  authorProfile,
+  isAuthorLoading,
 }: {
   board: Board;
   canEdit: boolean;
+  canFork: boolean;
   rkey: string;
   onFork: () => void;
   isForkingBoard: boolean;
+  authorProfile: ProfileViewDetailed | null;
+  isAuthorLoading: boolean;
 }) {
   return (
-    <div className="flex flex-row mb-5 justify-between">
+    <div className="flex flex-col md:flex-row mb-5 md:justify-between gap-4">
       <div className="flex flex-row">
         <div className="ml-2">
           <div className="flex items-center gap-2">
@@ -292,11 +315,54 @@ function BoardHeader({
           <p className="text-black/80 dark:text-white/80">
             {board.description}
           </p>
+
+          {/* Author with subtle styling */}
+          <div className="flex items-center text-sm text-muted-foreground mt-2">
+            <span className="mr-2">By</span>
+            {isAuthorLoading ? (
+              <div className="flex items-center animate-pulse">
+                <div className="w-4 h-4 rounded-full bg-muted mr-1.5"></div>
+                <div className="w-16 h-3 bg-muted rounded"></div>
+              </div>
+            ) : authorProfile ? (
+              <a
+                href={`https://bsky.app/profile/${authorProfile.handle}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center hover:text-foreground transition-colors"
+              >
+                <Avatar className="w-4 h-4 mr-1.5">
+                  <AvatarImage src={authorProfile.avatar} />
+                  <AvatarFallback className="text-[8px]">
+                    {authorProfile.displayName?.[0] || authorProfile.handle[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <span>{authorProfile.displayName || authorProfile.handle}</span>
+              </a>
+            ) : (
+              <span className="italic">unknown</span>
+            )}
+          </div>
         </div>
         {canEdit && <EditButton board={board} rkey={rkey} className="ml-3" />}
       </div>
-      {!canEdit && (
-        <div>
+
+      <div className="flex gap-2 mt-2 md:mt-0">
+        <Button
+          className="gap-2 cursor-pointer"
+          variant={"secondary"}
+          onClick={() => {
+            navigator.clipboard.writeText(window.location.href);
+            toast("Link to board copied to clipboard", {
+              duration: 2000,
+              dismissible: true,
+            });
+          }}
+        >
+          <Share2 className="w-4 h-4" />
+          Share
+        </Button>
+        {canFork && (
           <Button
             className="gap-2 cursor-pointer"
             onClick={onFork}
@@ -305,12 +371,12 @@ function BoardHeader({
             {isForkingBoard ? (
               <LoaderCircle className="animate-spin w-4 h-4" />
             ) : (
-              <GitFork />
+              <GitFork className="w-4 h-4" />
             )}
             {isForkingBoard ? "Forking..." : "Fork"}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

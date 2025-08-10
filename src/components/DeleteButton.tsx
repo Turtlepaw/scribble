@@ -11,19 +11,15 @@ import {
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
-import { DeleteIcon, EditIcon, LoaderCircle, TrashIcon } from "lucide-react";
+import { LoaderCircle, TrashIcon } from "lucide-react";
 import { Board, useBoardsStore } from "@/lib/stores/boards";
-import { BoardsPicker } from "./BoardPicker";
 import { toast } from "sonner";
 import { AtUri } from "@atproto/api";
 import { LIST_COLLECTION, LIST_ITEM_COLLECTION } from "@/constants";
-import { FeedItem } from "./Feed";
-import { BoardItem, useBoardItemsStore } from "@/lib/stores/boardItems";
+import { useBoardItemsStore } from "@/lib/stores/boardItems";
 import clsx from "clsx";
-import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
 import { Progress } from "./ui/progress";
+import { redirect } from "next/navigation";
 
 export function DeleteButton({ board, rkey }: { board: Board; rkey: string }) {
   const { agent } = useAuth();
@@ -135,6 +131,7 @@ export function DeleteButton({ board, rkey }: { board: Board; rkey: string }) {
                     removeBoard(agent.assertDid, rkey);
                     toast("Board deleted");
                     setOpen(false);
+                    redirect("/boards");
                   } else {
                     toast("Failed to delete board");
                   }
