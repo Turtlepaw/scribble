@@ -140,6 +140,7 @@ function ImageCard({
               width={image.aspectRatio?.width ?? 400}
               height={image.aspectRatio?.height ?? 400}
               className="object-contain max-w-full max-h-full rounded-lg"
+              priority
             />
           </div>
 
