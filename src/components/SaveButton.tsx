@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "./ui/button";
 import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
-import { ChevronDown, LoaderCircle } from "lucide-react";
+import { ChevronDown, ExternalLink, LoaderCircle } from "lucide-react";
 import { useBoardsStore } from "@/lib/stores/boards";
 import { BoardsPicker } from "./BoardPicker";
 import { toast } from "sonner";
@@ -213,6 +213,19 @@ export function SaveButton({
                 }
               }}
             />
+            <p className="mt-3 text-sm text-muted-foreground">
+              Saved posts use{" "}
+              <a
+                href="https://scrapboard.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center hover:underline text-blue-400 mr-1"
+              >
+                scrapboard.org&apos;s
+                <ExternalLink className="w-3 h-3 ml-1" />
+              </a>
+              standard format, making them interoperable.
+            </p>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
