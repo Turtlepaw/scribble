@@ -18,7 +18,7 @@ import { th } from "zod/v4/locales";
 
 type AuthContextType = {
   session: OAuthSession | null;
-  agent: Agent | null;
+  agent: Agent;
   loading: boolean;
   login: (handle: string) => Promise<void>;
   logout: () => void;
@@ -27,10 +27,9 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const defaultAgent = new Agent({ service: "https://bsky.social" });
   const [session, setSession] = useState<OAuthSession | null>(null);
-  const [agent, setAgent] = useState<Agent | null>(
-    new Agent({ service: "https://bsky.social" })
-  );
+  const [agent, setAgent] = useState<Agent>(defaultAgent);
   const [loading, setLoading] = useState(true);
   const [client, setClient] = useState<BrowserOAuthClient | null>(null);
 
@@ -71,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const ag = new Agent(result.session);
           setSession(result.session);
           setAgent(ag);
-          const prefs = await agent?.getPreferences();
+          const prefs = await ag.getPreferences();
           if (!prefs) return;
         } else {
           const did = localStorage.getItem("did");
@@ -93,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       c.addEventListener("deleted", (event: CustomEvent) => {
         console.warn("Session invalidated", event.detail);
         setSession(null);
-        setAgent(null);
+        setAgent(defaultAgent);
       });
     };
 
@@ -123,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (client && session) {
       client.revoke(session.sub);
       setSession(null);
-      setAgent(null);
+      setAgent(defaultAgent);
       // refresh page
       window.location.reload();
     }

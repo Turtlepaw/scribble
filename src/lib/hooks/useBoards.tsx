@@ -54,9 +54,3 @@ export function useBoards(did?: string | null) {
 
   return { isLoading };
 }
-
-export function BoardsProvider({ children }: PropsWithChildren) {
-  useBoards();
-  useBoardItems();
-  return children;
-}

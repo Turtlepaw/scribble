@@ -1,6 +1,13 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { AppBskyEmbedImages, AppBskyFeedPost, AtUri } from "@atproto/api";
+import {
+  Agent,
+  AppBskyEmbedImages,
+  AppBskyFeedPost,
+  AtUri,
+  moderatePost,
+  ModerationPrefs,
+} from "@atproto/api";
 import { LoaderCircle } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
@@ -10,8 +17,14 @@ import { PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { SaveButton } from "./SaveButton";
 import { UnsaveButton } from "./UnsaveButton";
 import { LikeButton } from "./LikeButton";
-import { ContentWarning } from "./ContentWarning";
 import { useState, useEffect } from "react";
+import {
+  DEFAULT_LOGGED_OUT_LABEL_PREFERENCES,
+  useModerationOpts,
+} from "@/lib/hooks/useModerationOpts";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { ContentWarning } from "./ContentWarning";
+import clsx from "clsx";
 
 export type FeedItem = {
   id: string;
@@ -85,14 +98,33 @@ function ImageCard({
 }) {
   const image = getImageFromItem(item, index);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const modOpts = useModerationOpts();
+  const { session, agent } = useAuth();
 
   if (!image) return;
 
   const ActionButton = showUnsaveButton ? UnsaveButton : SaveButton;
   const txt = getText(item);
+  const opts: ModerationPrefs = modOpts.moderationPrefs ?? {
+    adultContentEnabled: false,
+    labelers: agent.appLabelers.map((did) => ({
+      did,
+      labels: DEFAULT_LOGGED_OUT_LABEL_PREFERENCES,
+    })),
+    hiddenPosts: [],
+    mutedWords: [],
+    labels: DEFAULT_LOGGED_OUT_LABEL_PREFERENCES,
+  };
+  const mod = moderatePost(item, {
+    prefs: opts,
+    labelDefs: modOpts.labelDefs,
+    userDid: session?.did,
+  });
+
+  // Debug code removed for production
 
   return (
-    <ContentWarning post={item}>
+    <ContentWarning mod={mod}>
       <div className={`relative group ${isDropdownOpen ? "hover-active" : ""}`}>
         {/* Save/Unsave button – top-left */}
         <div className="absolute top-3 left-3 z-30 opacity-0 group-hover:opacity-100 group-[.hover-active]:opacity-100 transition-opacity">
@@ -154,7 +186,12 @@ function ImageCard({
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
                     <Avatar>
-                      <AvatarImage src={item.author.avatar} />
+                      <AvatarImage
+                        className={clsx(
+                          mod.ui("avatar").blur ? "blur-3xl" : ""
+                        )}
+                        src={item.author.avatar}
+                      />
                       <AvatarFallback>
                         {item.author.displayName || item.author.handle}
                       </AvatarFallback>
