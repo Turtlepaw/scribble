@@ -28,7 +28,9 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<OAuthSession | null>(null);
-  const [agent, setAgent] = useState<Agent | null>(null);
+  const [agent, setAgent] = useState<Agent | null>(
+    new Agent({ service: "https://bsky.social" })
+  );
   const [loading, setLoading] = useState(true);
   const [client, setClient] = useState<BrowserOAuthClient | null>(null);
 
