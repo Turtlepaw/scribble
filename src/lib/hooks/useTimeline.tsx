@@ -23,7 +23,7 @@ function filterPosts(posts: FeedViewPost[], seenPosts: Set<string>) {
 }
 
 export function useFetchTimeline() {
-  const { agent } = useAuth();
+  const { agent, session } = useAuth();
   const {
     timeline,
     appendTimeline,
@@ -38,14 +38,37 @@ export function useFetchTimeline() {
   const pendingFeedRequests = useRef<Set<string>>(new Set());
   // Use a ref to track the latest agent value
   const agentRef = useRef(agent);
+  const sessionRef = useRef(session);
   // Track processing state to avoid loops
   const isProcessingRequests = useRef(false);
   const processingRetries = useRef(0);
+  const authenticationRetries = useRef(0);
+  const [forceRetry, setForceRetry] = useState(0);
 
-  // Update the ref when agent changes
+  // Update the refs when agent or session changes
   useEffect(() => {
     agentRef.current = agent;
-  }, [agent]);
+    sessionRef.current = session;
+
+    // If session exists but agent doesn't have session, trigger a retry
+    if (session && agent && !agent.did) {
+      console.log(
+        "Session exists but agent doesn't have it attached yet, scheduling retry"
+      );
+      const retryTimeout = setTimeout(() => {
+        setForceRetry((prev) => prev + 1);
+      }, 500);
+      return () => clearTimeout(retryTimeout);
+    }
+  }, [agent, session]);
+
+  const isAuthenticated = useCallback(() => {
+    // Check both ways: either agent has session or we have separate session
+    return (
+      (agentRef.current && agentRef.current.did) ||
+      (agentRef.current && sessionRef.current)
+    );
+  }, []);
 
   const fetchFeed = useCallback(
     async (feed?: string | undefined) => {
@@ -54,11 +77,16 @@ export function useFetchTimeline() {
       // Use the latest agent from the ref
       const currentAgent = agentRef.current;
 
-      // If not ready, queue the request for later
-      if (!currentAgent) {
+      // Enhanced authentication check
+      const authenticated = isAuthenticated();
+
+      // If not ready or not authenticated, queue the request for later
+      if (!currentAgent || !authenticated) {
         console.log(
-          "Agent not available, queuing feed request for later:",
-          feed || "main"
+          `Agent not available or not authenticated, queuing feed request for later: ${
+            feed || "main"
+          }`,
+          `Agent: ${!!currentAgent}, Auth: ${authenticated}`
         );
         pendingFeedRequests.current.add(feed || "main");
         return;
@@ -132,6 +160,7 @@ export function useFetchTimeline() {
       appendTimeline,
       setTimelineLoading,
       setCustomFeedLoading,
+      isAuthenticated,
     ]
   );
 
@@ -143,12 +172,16 @@ export function useFetchTimeline() {
       return;
     }
 
-    // If agent isn't ready, try again later
-    if (!agentRef.current) {
+    // Enhanced authentication check
+    const authenticated = isAuthenticated();
+
+    // If agent isn't ready or not authenticated, try again later
+    if (!agentRef.current || !authenticated) {
       if (processingRetries.current < 5) {
         processingRetries.current++;
         console.log(
-          `Agent not ready for processing, will retry (${processingRetries.current}/5)`
+          `Agent not ready or not authenticated for processing, will retry (${processingRetries.current}/5)`,
+          `Agent: ${!!agentRef.current}, Auth: ${authenticated}`
         );
         setTimeout(() => processPendingRequests(), 1000);
       } else {
@@ -178,16 +211,43 @@ export function useFetchTimeline() {
     } finally {
       isProcessingRequests.current = false;
     }
-  }, [fetchFeed]);
+  }, [fetchFeed, isAuthenticated]);
 
-  // Effect to initialize feed once agent is available
+  // Try to load feeds even if there are authentication issues
+  useEffect(() => {
+    if (authenticationRetries.current >= 3) return;
+
+    if (agent && session && !isReady) {
+      console.log(
+        "Attempting to force feed load despite authentication issues"
+      );
+      authenticationRetries.current++;
+
+      setTimeout(() => {
+        setIsReady(true);
+        processPendingRequests();
+      }, 1000 * authenticationRetries.current);
+    }
+  }, [agent, session, isReady, processPendingRequests, forceRetry]);
+
+  // Effect to initialize feed once agent is available and authenticated
   useEffect(() => {
     if (!agent) {
       console.log("Waiting for agent to become available");
       return;
     }
 
-    console.log("Agent detected, setting ready state");
+    // Enhanced authentication check
+    const authenticated = isAuthenticated();
+
+    if (!authenticated) {
+      console.log(
+        `Agent available but not authenticated, waiting for session. Session ref: ${!!sessionRef.current}`
+      );
+      return;
+    }
+
+    console.log("Authenticated agent detected, setting ready state");
     setIsReady(true);
 
     // Give a small delay for agent to fully initialize
@@ -200,28 +260,41 @@ export function useFetchTimeline() {
 
       const loadMinimum = async () => {
         setIsInitialized(true);
-        console.log("Agent available, loading initial feed");
+        console.log("Authenticated agent available, loading initial feed");
 
-        // Process any pending requests first
-        await processPendingRequests();
+        try {
+          // Process any pending requests first
+          await processPendingRequests();
 
-        // Then load the minimum required images
-        let attempts = 0;
-        while (
-          timeline.posts.flatMap(
-            (p) => (p.post.embed as AppBskyEmbedImages.View)?.images || []
-          ).length < 30 &&
-          attempts < 3
-        ) {
-          await fetchFeed();
-          attempts++;
-          if (!timeline.cursor) break;
+          // Then load the minimum required images
+          let attempts = 0;
+          while (
+            timeline.posts.flatMap(
+              (p) => (p.post.embed as AppBskyEmbedImages.View)?.images || []
+            ).length < 30 &&
+            attempts < 3
+          ) {
+            await fetchFeed();
+            attempts++;
+            if (!timeline.cursor) break;
+          }
+        } catch (err) {
+          console.error("Error during initial feed loading:", err);
         }
       };
 
       loadMinimum();
     }, 500); // Small delay to ensure agent is fully initialized
-  }, [agent, isInitialized, processPendingRequests, fetchFeed, timeline.posts]);
+  }, [
+    agent,
+    agent?.did,
+    isInitialized,
+    processPendingRequests,
+    fetchFeed,
+    timeline.posts,
+    isAuthenticated,
+    forceRetry,
+  ]);
 
   return { fetchFeed, isReady };
 }
